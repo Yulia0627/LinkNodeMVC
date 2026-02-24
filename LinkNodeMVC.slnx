@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="LinkNodeDomain/LinkNodeDomain.csproj" />
+  <Project Path="LinkNodeInfrastructure/LinkNodeInfrastructure.csproj" />
+</Solution>
