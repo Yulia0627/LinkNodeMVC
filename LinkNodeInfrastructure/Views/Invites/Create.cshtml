@@ -1,40 +1,90 @@
 ﻿@model LinkNodeDomain.Model.Invite
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Відправлення запрошення";
 }
 
-<h1>Create</h1>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
 
-<h4>Invite</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="FreelancerId" class="control-label"></label>
-                <select asp-for="FreelancerId" class ="form-control" asp-items="ViewBag.FreelancerId"></select>
+                <div class="card-header py-3 border-0 text-center" style="background-color: #34495e;">
+                    <h4 class="mb-0 fw-bold text-white">Запрошення на вакансію</h4>
+                </div>
+
+                <div class="card-body p-4 bg-white">
+                    <form asp-action="Create">
+                        <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                        <input type="hidden" asp-for="FreelancerId" />
+
+                        <div class="text-center mb-4">
+                            <i class="bi bi-envelope-paper text-muted" style="font-size: 3rem;"></i>
+                            <p class="text-muted small mt-2">Оберіть одну з ваших активних вакансій, щоб запросити фрілансера до співпраці</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="VacancyId" class="form-label fw-bold small text-dark">Ваші вакансії</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-1"><i class="bi bi-briefcase"></i></span>
+                                <select asp-for="VacancyId" class="form-select bg-light border-1 py-2" asp-items="ViewBag.VacancyId">
+                                    <option value="" selected disabled>Оберіть вакансію...</option>
+                                </select>
+                            </div>
+                            <span asp-validation-for="VacancyId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn py-2 fw-bold text-white shadow-sm" style="background-color: #34495e;">
+                                Надіслати запрошення
+                            </button>
+                        </div>
+
+                        <div class="text-center">
+                            <a asp-action="Index" class="text-muted small text-decoration-underline">Повернутися до списку</a>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="StatusId" class="control-label"></label>
-                <select asp-for="StatusId" class ="form-control" asp-items="ViewBag.StatusId"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="VacancyId" class="control-label"></label>
-                <select asp-for="VacancyId" class ="form-control" asp-items="ViewBag.VacancyId"></select>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .form-select {
+        border-radius: 0 6px 6px 0;
+        border: 1px solid #dee2e6;
+        font-size: 0.95rem;
+    }
+
+    .input-group-text {
+        border-radius: 6px 0 0 6px;
+        color: #34495e;
+    }
+
+    .form-select:focus {
+        background-color: #fff;
+        border-color: #34495e;
+        box-shadow: none;
+    }
+
+    .card {
+        border-radius: 12px !important;
+    }
+
+    .btn:hover {
+        filter: brightness(1.1);
+        transition: 0.3s;
+    }
+</style>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

@@ -1,54 +1,97 @@
 ﻿@model LinkNodeDomain.Model.Vacancy
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Створення вакансії";
 }
 
-<h1>Додавання вакансії до категорії "@ViewBag.CategoryName"</h1>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
 
-<h4>Вакансія</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="ClientId" class="control-label"></label>
-                <select asp-for="ClientId" class="form-control" asp-items="@(ViewBag.ClientId as IEnumerable<SelectListItem>)"></select>
+                <div class="card-header py-3 border-0 text-center" style="background-color: #34495e;">
+                    <h4 class="mb-0 fw-bold text-white">Створення вакансії</h4>
+                </div>
+
+                <div class="card-body p-4 bg-white">
+                    <form asp-action="Create">
+                        <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Title" class="form-label fw-bold small text-dark">Назва вакансії</label>
+                            <input asp-for="Title" class="form-control bg-light border-1 py-2" placeholder="Введіть назву..." />
+                            <span asp-validation-for="Title" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="EmpTypeId" class="form-label fw-bold small text-dark">Тип зайнятості</label>
+                            <select asp-for="EmpTypeId" class="form-select bg-light border-1 py-2" asp-items="ViewBag.EmpTypeId">
+                                <option value="" selected disabled>Оберіть тип...</option>
+                            </select>
+                            <span asp-validation-for="EmpTypeId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="CategoryId" class="form-label fw-bold small text-dark">Категорія</label>
+                            <select asp-for="CategoryId" class="form-select bg-light border-1 py-2" asp-items="ViewBag.CategoryId">
+                                <option value="" selected disabled>Оберіть категорію...</option>
+                            </select>
+                            <span asp-validation-for="CategoryId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Price" class="form-label fw-bold small text-dark">Бюджет (₴)</label>
+                            <input asp-for="Price" class="form-control bg-light border-1 py-2" type="number" step="0.01" />
+                            <span asp-validation-for="Price" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Description" class="form-label fw-bold small text-dark">Опис вакансії</label>
+                            <textarea asp-for="Description" class="form-control bg-light border-1 py-2" rows="4"></textarea>
+                            <span asp-validation-for="Description" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn py-2 fw-bold text-white" style="background-color: #34495e;">
+                                Створити вакансію
+                            </button>
+                        </div>
+
+                        <div class="text-center">
+                            <a asp-action="Index" class="text-muted small text-decoration-underline">Повернутися до списку</a>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="Title" class="control-label"></label>
-                <input asp-for="Title" class="form-control" />
-                <span asp-validation-for="Title" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="EmpTypeId" class="control-label"></label>
-                <select asp-for="EmpTypeId" class="form-control" asp-items="@(ViewBag.EmpTypeId as IEnumerable<SelectListItem>)">
-                    <option value=" " selected dissabled>Оберіть тип зайнятості</option>
-                </select>
-            </div>
-           <input type = "hidden" asp-for = "CategoryId" value =" @ViewBag.CategoryId"/>
-            <div class="form-group">
-                <label asp-for="Price" class="control-label"></label>
-                <input asp-for="Price" class="form-control" />
-                <span asp-validation-for="Price" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+<style>
+    
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .form-control, .form-select {
+        border-radius: 6px;
+        border: 1px solid #dee2e6;
+        font-size: 0.95rem;
+    }
+
+        .form-control:focus, .form-select:focus {
+            background-color: #fff;
+            border-color: #34495e;
+            box-shadow: none;
+        }
+
+    .card {
+        border-radius: 12px !important;
+    }
+</style>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

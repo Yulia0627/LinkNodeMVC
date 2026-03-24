@@ -1,48 +1,100 @@
 ﻿@model LinkNodeDomain.Model.Freelancer
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Профіль фрілансера";
 }
 
-<h1>Details</h1>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card shadow-sm border-0 custom-card">
 
-<div>
-    <h4>Freelancer</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.HourlyRate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.HourlyRate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Description)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Category)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Category.Category1)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.EmpType)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.EmpType.EmpType)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.FreelancerNavigation)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.FreelancerNavigation.Country)
-        </dd>
-    </dl>
+                <div class="card-header border-0 py-4 header-dark text-center">
+                    <div class="mb-3">
+                        <div class="avatar-circle mx-auto bg-primary-subtle text-primary">
+                            <h1 class="mb-0 fw-bold">@(Model.FreelancerNavigation?.Name?.Substring(0, 1) ?? "F")</h1>
+                        </div>
+                    </div>
+                    <h2 class="mb-0 fw-bold text-white">
+                        @Model.FreelancerNavigation?.Name @Model.FreelancerNavigation?.Surname
+                    </h2>
+                    <p class="text-white-50 mb-0">@Model.Category?.Category1 | @Model.EmpType?.EmpType</p>
+                </div>
+
+                <div class="card-body p-5">
+                    <div class="row g-4">
+                        <div class="col-md-8">
+                            <h5 class="fw-bold border-bottom pb-2 mb-3">Про себе</h5>
+                            <p class="text-dark fs-5" style="line-height: 1.6;">
+                                @(string.IsNullOrEmpty(Model.Description) ? "Опис відсутній" : Model.Description)
+                            </p>
+
+                            <div class="row mt-4">
+                                <div class="col-sm-6">
+                                    <h6 class="text-muted small text-uppercase">Email</h6>
+                                    <p class="fw-bold"><i class="bi bi-envelope me-2 text-primary"></i>@Model.FreelancerNavigation?.Email</p>
+                                </div>
+                                <div class="col-sm-6">
+                                    <h6 class="text-muted small text-uppercase">Країна</h6>
+                                    <p class="fw-bold"><i class="bi bi-geo-alt me-2 text-danger"></i>@Model.FreelancerNavigation?.Country</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 border-start">
+                            <div class="p-3 bg-light rounded-3 text-center mb-3 shadow-sm border">
+                                <h6 class="text-muted small text-uppercase">Погодинна ставка</h6>
+                                <h2 class="text-success fw-bold mb-0">@Model.HourlyRate.ToString("C0")</h2>
+                                <small class="text-muted">за годину</small>
+                            </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
-</div>
+
+<style>
+    body {
+        background-color: #f4f7f6;
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+    }
+
+    .custom-card {
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    .header-dark {
+        background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);
+    }
+
+    .avatar-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 4px solid rgba(255,255,255,0.2);
+        background-color: white !important;
+    }
+
+    .custom-btn {
+        background-color: #2c3e50;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+        .custom-btn:hover {
+            background-color: #1a252f;
+            transform: translateY(-2px);
+        }
+
+    .bg-light {
+        background-color: #f8f9fa !important;
+    }
+</style>

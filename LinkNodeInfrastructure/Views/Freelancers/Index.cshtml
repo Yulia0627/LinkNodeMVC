@@ -4,50 +4,106 @@
     ViewData["Title"] = "Реєстрація фрілансера";
 }
 
-<h1>Реєстрація фрілансера</h1>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="display-5 fw-bold text-primary">Фрілансери</h1>
+    </div>
 
-<p>
-    <a asp-action="Create">Зареєструватися</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.HourlyRate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Category)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.EmpType)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.HourlyRate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Category.Category1)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.EmpType.EmpType)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+    <div class="card shadow-sm mb-5 bg-light border-0">
+        <div class="card-body p-4">
+            <form asp-action="Index" method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Пошук за ім'ям</label>
+                    <input type="text" name="searchName" value="@ViewData["CurrentName"]"
+                           class="form-control" placeholder="Ім'я або прізвище..." />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Категорія</label>
+                    <select name="categoryId" class="form-select" asp-items="ViewBag.CategoryId">
+                        <option value="">Всі категорії</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Макс. ціна ($/год)</label>
+                    <input type="number" name="maxRate" value="@ViewData["CurrentMaxRate"]" class="form-control" placeholder="До..." />
+                </div>
+                <div class="col-12 text-end mt-3">
+                    <a asp-action="Index" class="btn btn-link text-decoration-none text-secondary">Очистити</a>
+                    <button type="submit" class="btn btn-primary px-5 shadow-sm">Знайти</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        @if (!Model.Any())
+        {
+            <div class="col-12 text-center py-5">
+                <h3 class="text-muted">Нікого не знайдено 🔍</h3>
+                <p>Спробуйте змінити фільтри пошуку.</p>
+            </div>
+        }
+        else
+        {
+            @foreach (var item in Model)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm border-0 transition-hover">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3 shadow-sm"
+                                     style="width: 50px; height: 50px; font-weight: bold; min-width: 50px;">
+                                    @item.FreelancerNavigation.Name[0]@item.FreelancerNavigation.Surname[0]
+                                </div>
+                                <div class="text-truncate">
+                                    <h5 class="card-title mb-0 text-dark text-truncate">
+                                        @item.FreelancerNavigation.Name @item.FreelancerNavigation.Surname
+                                    </h5>
+                                    <small class="text-muted">@item.FreelancerNavigation.Country</small>
+                                </div>
+                            </div>
+
+                            <span class="badge rounded-pill bg-info text-white mb-2">
+                                @item.Category?.Category1
+                            </span>
+
+                            <p class="card-text text-secondary small mb-3" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; height: 4.5em;">
+                                @item.Description
+                            </p>
+                        </div>
+
+                        <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center pb-3">
+                            <div>
+                                <span class="fs-5 fw-bold text-dark">$@item.HourlyRate</span>
+                                <small class="text-muted">/год</small>
+                            </div>
+                            <div class="btn-group shadow-sm">
+                                <a asp-controller="Invites" asp-action="Create" asp-route-freelancerId="@item.Id"
+                                   class="btn btn-sm btn-primary px-3">Запросити</a>
+                                <button type="button" class="btn btn-sm btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <span class="visually-hidden">Меню</span>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" asp-action="Edit" asp-route-id="@item.Id">🔧 Редагувати</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" asp-action="Delete" asp-route-id="@item.Id">🗑️ Видалити</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<style>
+    .transition-hover {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .transition-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.12) !important;
+        }
+</style>

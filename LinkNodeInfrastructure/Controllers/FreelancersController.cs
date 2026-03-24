@@ -20,10 +20,30 @@ namespace LinkNodeInfrastructure.Controllers
         }
 
         // GET: Freelancers
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string search, int? categoryId, decimal? maxRate)
         {
-            var dbLinkNodeContext = _context.Freelancers.Include(f => f.Category).Include(f => f.EmpType).Include(f => f.FreelancerNavigation);
-            return View(await dbLinkNodeContext.ToListAsync());
+            ViewBag.CategoryId = new SelectList(_context.Categories, "Id", "Category1", categoryId);
+            var query = _context.Freelancers
+                .Include(f => f.Category)
+                .Include(f => f.EmpType)
+                .Include(f => f.FreelancerNavigation)
+                .AsQueryable();
+            if(!string.IsNullOrEmpty(search))
+            {
+                query = query.Where(f =>
+                f.FreelancerNavigation.Name.ToLower().Contains(search.ToLower()) ||
+                f.FreelancerNavigation.Surname.ToLower().Contains(search.ToLower()) ||
+                (f.FreelancerNavigation.Name.ToLower() + ' ' + f.FreelancerNavigation.Surname.ToLower()).Contains(search.ToLower()));
+            }
+            if (categoryId.HasValue)
+            {
+                query = query.Where(f => f.CategoryId == categoryId.Value);
+            }
+            if(maxRate.HasValue)
+            {
+                query = query.Where(f => f.HourlyRate <= maxRate.Value);
+            }
+            return View(await query.ToListAsync());
         }
 
         // GET: Freelancers/Details/5
@@ -48,12 +68,16 @@ namespace LinkNodeInfrastructure.Controllers
         }
 
         // GET: Freelancers/Create
-        public IActionResult Create()
+        public IActionResult Create(int id)
         {
+            var freelancer = new Freelancer
+            {
+                Id = id
+            };
             ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Category1");
             ViewData["EmpTypeId"] = new SelectList(_context.EmploymentTypes, "Id", "EmpType");
             //ViewData["Id"] = new SelectList(_context.Users, "Id", "Country");
-            return View();
+            return View(freelancer);
         }
 
         // POST: Freelancers/Create
@@ -63,6 +87,9 @@ namespace LinkNodeInfrastructure.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("CategoryId,HourlyRate,Description,EmpTypeId,Id")] Freelancer freelancer)
         {
+            ModelState.Remove("Category");
+            ModelState.Remove("EmpType");
+            ModelState.Remove("FreelancerNavigation");
             if (ModelState.IsValid)
             {
                 _context.Add(freelancer);

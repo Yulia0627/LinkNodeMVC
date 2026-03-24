@@ -1,0 +1,28 @@
+﻿@model LinkNodeDomain.Model.Interview
+
+@{
+    ViewData["Title"] = "Скасувати інтерв'ю";
+}
+
+<div class="card border-danger shadow-sm">
+    <div class="card-header bg-danger text-white">
+        <h3 class="mb-0">Скасування інтерв'ю</h3>
+    </div>
+    <div class="card-body">
+        <p class="lead">Ви впевнені, що хочете <strong>скасувати</strong> це інтерв'ю?</p>
+
+        <dl class="row">
+            <dt class="col-sm-4">Пропозиція:</dt>
+            <dd class="col-sm-8">@Model.Prop?.Description</dd>
+
+            <dt class="col-sm-4">Дата:</dt>
+            <dd class="col-sm-8">@Model.DateTime.ToString("dd.MM.yyyy HH:mm")</dd>
+        </dl>
+
+        <form asp-action="Delete">
+            <input type="hidden" asp-for="Id" />
+            <button type="submit" class="btn btn-danger btn-lg">Так, скасувати</button>
+            <a asp-action="Index" class="btn btn-secondary btn-lg">Ні, повернутися</a>
+        </form>
+    </div>
+</div>

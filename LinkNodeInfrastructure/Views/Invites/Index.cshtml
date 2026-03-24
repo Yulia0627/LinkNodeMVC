@@ -4,44 +4,110 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>Index</h1>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="fw-bold text-dark">Список запрошень</h1>
+    </div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Freelancer)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Status)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Vacancy)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Freelancer.Id)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Status.InviteStatus1)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Vacancy.Description)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5 bg-white rounded-3 shadow-sm">
+            <i class="bi bi-envelope-x text-muted" style="font-size: 3rem;"></i>
+            <h4 class="text-muted mt-3">Запрошень поки немає</h4>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var item in Model)
+            {
+                <div class="col-12 mb-3">
+                    <div class="card border-0 shadow-sm invite-card">
+                        <div class="card-body p-4">
+                            <div class="row align-items-center">
+                                <div class="col-md-5">
+                                    <h5 class="fw-bold mb-1 text-primary">@item.Vacancy?.Title</h5>
+                                    <p class="text-muted small mb-0 text-truncate-1">
+                                        <i class="bi bi-file-text me-1"></i> @item.Vacancy?.Description
+                                    </p>
+                                </div>
+
+                                <div class="col-md-3 border-start-md">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm me-2 bg-light text-secondary d-flex align-items-center justify-content-center rounded-circle" style="width: 35px; height: 35px;">
+                                            <i class="bi bi-person"></i>
+                                        </div>
+                                        <div>
+                                            <p class="mb-0 small text-muted">Фрілансер ID</p>
+                                            <p class="mb-0 fw-bold">#@item.Freelancer?.Id</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-2 text-center">
+                                    @{
+                                        var statusClass = item.Status?.InviteStatus1 == "Прийнято" ? "bg-success" :
+                                        item.Status?.InviteStatus1 == "Відхилено" ? "bg-danger" : "bg-warning text-dark";
+                                    }
+                                    <span class="badge rounded-pill @statusClass px-3 py-2">
+                                        @item.Status?.InviteStatus1
+                                    </span>
+                                </div>
+
+                                <div class="col-md-2 text-end">
+                                    <div class="dropdown">
+                                        <button class="btn btn-light btn-sm border" type="button" data-bs-toggle="dropdown">
+                                            <i class="bi bi-three-dots-vertical"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                                            <li><a class="dropdown-item py-2" asp-action="Details" asp-route-id="@item.Id"><i class="bi bi-info-circle me-2"></i>Деталі</a></li>
+                                            <li><a class="dropdown-item py-2" asp-action="Edit" asp-route-id="@item.Id"><i class="bi bi-pencil me-2"></i>Редагувати</a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item py-2 text-danger" asp-action="Delete" asp-route-id="@item.Id"><i class="bi bi-trash me-2"></i>Видалити</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .invite-card {
+        border-radius: 12px;
+        transition: transform 0.2s;
+        border-left: 4px solid #34495e !important; 
+    }
+
+        .invite-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+        }
+
+    .text-truncate-1 {
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    @@media (min-width: 768px) {
+        .border-start-md {
+            border-left: 1px solid #dee2e6 !important;
+            padding-left: 1.5rem;
+        }
+    }
+
+    .badge {
+        font-weight: 600;
+        letter-spacing: 0.3px;
+    }
+</style>

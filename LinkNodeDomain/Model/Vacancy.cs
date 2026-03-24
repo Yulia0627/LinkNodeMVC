@@ -16,23 +16,27 @@ public partial class Vacancy : Entity
     [Display(Name = "Тип зайнятості")]
     public int EmpTypeId { get; set; }
 
+    [Required(ErrorMessage = "Поле не повинно бути порожнім.")]
+    [Display(Name = "Категорія")]
     public int CategoryId { get; set; }
 
     [Required(ErrorMessage = "Поле не повинно бути порожнім.")]
-    [Display(Name = "Оплата")]
+    [Display(Name = "Погодинна оплата")]
     public decimal Price { get; set; }
 
     [Required(ErrorMessage = "Поле не повинно бути порожнім.")]
     [Display(Name = "Опис")]
     public string Description { get; set; } = null!;
 
+    [Display(Name = "Дата створення")]
     public DateTime CreatedDate { get; set; }
 
+    [Display(Name = "Дата закриття")]
     public DateTime? ClosedDate { get; set; }
 
-    public virtual ICollection<Admin> Admins { get; set; } = new List<Admin>();
+    public virtual ICollection<AdminAction> AdminActions { get; set; } = new List<AdminAction>();
 
-    [Display(Name = "Категорія")]
+    [Display(Name = "Категорія")]  
     public virtual Category Category { get; set; } = null!;
 
     [Display(Name = "Клієнт")]

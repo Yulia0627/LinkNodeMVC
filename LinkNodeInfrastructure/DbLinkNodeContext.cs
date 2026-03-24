@@ -18,7 +18,7 @@ public partial class DbLinkNodeContext : DbContext
 
     public virtual DbSet<ActionType> ActionTypes { get; set; }
 
-    public virtual DbSet<Admin> Admins { get; set; }
+    public virtual DbSet<AdminAction> AdminActions { get; set; }
 
     public virtual DbSet<CallStatusStory> CallStatusStories { get; set; }
 
@@ -60,12 +60,13 @@ public partial class DbLinkNodeContext : DbContext
             entity.Property(e => e.Action).HasColumnName("action");
         });
 
-        modelBuilder.Entity<Admin>(entity =>
+        modelBuilder.Entity<AdminAction>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("Admins_pkey");
+            entity.ToTable("AdminActions");
+            entity.HasKey(e => e.Id).HasName("AdminActions_pkey");
+            entity.Property(e => e.Id).HasColumnName("id");
 
-            entity.Property(e => e.Id)
-                .ValueGeneratedNever()
+            entity.Property(e => e.AdminId)
                 .HasColumnName("adminId");
             entity.Property(e => e.ActionId).HasColumnName("actionId");
             entity.Property(e => e.CreatedDate)
@@ -75,23 +76,23 @@ public partial class DbLinkNodeContext : DbContext
             entity.Property(e => e.TargetUserId).HasColumnName("targetUserId");
             entity.Property(e => e.TargetVacancyId).HasColumnName("targetVacancyId");
 
-            entity.HasOne(d => d.Action).WithMany(p => p.Admins)
+            entity.HasOne(d => d.Action).WithMany(p => p.AdminActions)
                 .HasForeignKey(d => d.ActionId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("Admins_actionId_fkey");
+                .HasConstraintName("AdminActions_actionId_fkey");
 
-            entity.HasOne(d => d.AdminNavigation).WithOne(p => p.AdminAdminNavigation)
-                .HasForeignKey<Admin>(d => d.Id)
+            entity.HasOne(d => d.Admin).WithMany(p => p.AdminActions)
+                .HasForeignKey(d => d.AdminId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("Admins_adminId_fkey");
+                .HasConstraintName("AdminActions_adminId_fkey");
 
             entity.HasOne(d => d.TargetUser).WithMany(p => p.AdminTargetUsers)
                 .HasForeignKey(d => d.TargetUserId)
-                .HasConstraintName("Admins_targetUserId_fkey");
+                .HasConstraintName("AdminActions_targetUserId_fkey");
 
-            entity.HasOne(d => d.TargetVacancy).WithMany(p => p.Admins)
+            entity.HasOne(d => d.TargetVacancy).WithMany(p => p.AdminActions)
                 .HasForeignKey(d => d.TargetVacancyId)
-                .HasConstraintName("Admins_targetVacancyId_fkey");
+                .HasConstraintName("AdminActions_targetVacancyId_fkey");
         });
 
         modelBuilder.Entity<CallStatusStory>(entity =>

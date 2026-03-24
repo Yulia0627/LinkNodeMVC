@@ -1,0 +1,65 @@
+﻿@model IEnumerable<LinkNodeDomain.Model.Invite>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="fw-bold text-primary">📩 Мої запрошення</h1>
+        <span class="badge bg-primary rounded-pill">Всього: @Model.Count()</span>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="card border-0 shadow-sm p-5 text-center">
+            <i class="bi bi-envelope-open text-muted" style="font-size: 3rem;"></i>
+            <h4 class="text-muted mt-3">Запрошень поки немає</h4>
+            <p>Активно відгукуйтесь на вакансії, щоб вас помітили!</p>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var item in Model)
+            {
+                <div class="col-12 mb-3">
+                    <div class="card border-0 shadow-sm h-100 overflow-hidden" style="border-radius: 15px;">
+                        <div class="row g-0">
+                            <div class="col-md-1 bg-primary d-none d-md-flex align-items-center justify-content-center text-white">
+                                <i class="bi bi-send-fill fs-3"></i>
+                            </div>
+
+                            <div class="col-md-11">
+                                <div class="card-body p-4">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h4 class="card-title fw-bold mb-1">@item.Vacancy.Title</h4>
+                                            <p class="text-primary fw-semibold mb-2">
+                                                <i class="bi bi-building"></i> @item.Vacancy.Client.CompanyName
+                                            </p>
+                                            <div class="text-muted small">
+                                                <i class="bi bi-person-circle"></i>
+                                                Менеджер: @item.Vacancy.Client.ClientNavigation.Name @item.Vacancy.Client.ClientNavigation.Surname
+                                            </div>
+                                        </div>
+                                        <span class="badge @(item.StatusId == 1 ? "bg-warning" : "bg-success") px-3 py-2">
+                                            @item.Status.InviteStatus1
+                                        </span>
+                                    </div>
+
+                                    <hr class="my-3 opacity-25">
+
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <a asp-controller="Vacancies" asp-action="Index" asp-route-id="@item.VacancyId"
+                                           class="btn btn-outline-primary btn-sm px-4 rounded-pill">
+                                            Деталі вакансії
+                                        </a>
+                                        <button class="btn btn-success btn-sm px-4 rounded-pill">Прийняти</button>
+                                        <button class="btn btn-light btn-sm px-4 rounded-pill">Відхилити</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using LinkNodeDomain.Model;
 using LinkNodeInfrastructure;
+using Microsoft.AspNetCore.Identity;
 
 namespace LinkNodeInfrastructure.Controllers
 {
@@ -20,13 +21,40 @@ namespace LinkNodeInfrastructure.Controllers
         }
 
         // GET: Vacancies
-        public async Task<IActionResult> Index(int? id, string? name)
+        public async Task<IActionResult> Index(int? categoryId, decimal? price, int? empTypeId)
         {
-            if (id == null) return RedirectToAction("Categories", "Index");
-            ViewBag.CategoryId = id;
-            ViewBag.CategoryName = name;
-            var vacancyByCategory = _context.Vacancies.Where(v => v.CategoryId == id).Include(v => v.Category).Include(v => v.Client).Include(v => v.EmpType);
-            return View(await vacancyByCategory.ToListAsync());
+            var currentUserId = 9;
+            //ViewData["CurrentCategory"] = categoryId;
+            ViewData["CurrentPrice"] = price;
+            //ViewData["CurrentEmpType"] = empTypeId;
+            ViewBag.CategoryId = new SelectList(_context.Categories, "Id", "Category1", categoryId);
+            ViewBag.EmpTypeId = new SelectList(_context.EmploymentTypes, "Id", "EmpType", empTypeId);
+            var query = _context.Vacancies
+                .Include(v => v.Category)
+                .Include(v => v.Client)
+                .Include(v => v.EmpType)
+                .AsQueryable();
+                
+           if (currentUserId == 9)
+           {
+
+              query = query.Where(v => v.ClosedDate == null);
+           }
+            if (categoryId.HasValue)
+            {
+                query = query.Where(v => v.CategoryId == categoryId.Value);
+            }
+            if (price.HasValue)
+            {
+            query = query.Where(v => v.Price >= price.Value);
+            }
+            if (empTypeId.HasValue)
+            {
+                query = query.Where(v => v.EmpTypeId == empTypeId.Value);
+            }
+            query = query.Where(v => v.ClosedDate == null);
+            query = query.OrderByDescending(v => v.CreatedDate);
+            return View(await query.ToListAsync());
         }
 
         // GET: Vacancies/Details/5
@@ -38,9 +66,9 @@ namespace LinkNodeInfrastructure.Controllers
             }
 
             var vacancy = await _context.Vacancies
-                .Include(v => v.Category)
-                .Include(v => v.Client)
-                .Include(v => v.EmpType)
+                .Include(v => v.Proposals)
+                .ThenInclude(p=>p.Freelancer)
+                .ThenInclude(f=>f.FreelancerNavigation)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (vacancy == null)
             {
@@ -51,16 +79,9 @@ namespace LinkNodeInfrastructure.Controllers
         }
 
         // GET: Vacancies/Create
-        public IActionResult Create(int categoryId)
+        public IActionResult Create()
         {
-            //ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Category1");
-            var category = _context.Categories.FirstOrDefault(c => c.Id == categoryId);
-            if (category == null)
-            {
-                return NotFound();
-            }
-            ViewBag.CategoryId = category.Id;
-            ViewBag.CategoryName = category.Category1;
+            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Category1");
             ViewData["ClientId"] = new SelectList(_context.Clients, "Id", "Id");
             ViewData["EmpTypeId"] = new SelectList(_context.EmploymentTypes, "Id", "EmpType");
             return View();
@@ -71,22 +92,29 @@ namespace LinkNodeInfrastructure.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(int categoryId, [Bind("ClientId,Title,EmpTypeId,CategoryId,Price,Description,CreatedDate,ClosedDate,Id")] Vacancy vacancy)
+        public async Task<IActionResult> Create([Bind("ClientId,Title,EmpTypeId,CategoryId,Price,Description,CreatedDate,ClosedDate,Id")] Vacancy vacancy)
         {
-            vacancy.CategoryId = categoryId;
+            ModelState.Remove("ClientId");
+            ModelState.Remove("EmpTypeId");
+            ModelState.Remove("CategoryId");
+            ModelState.Remove("CreatedDate");
+            ModelState.Remove("ClosedDate");
+            ModelState.Remove("Category");
+            ModelState.Remove("Client");
+            ModelState.Remove("EmpType");
+
             if (ModelState.IsValid)
             {
+                vacancy.ClientId = 7;
                 vacancy.CreatedDate = DateTime.Now;
                 _context.Add(vacancy);
                 await _context.SaveChangesAsync();
-                //return RedirectToAction(nameof(Index));
-                return RedirectToAction("Index", "Vacancies", new { id = categoryId, name = _context.Categories.Where(c => c.Id == categoryId).FirstOrDefault().Category1});
+                return RedirectToAction(nameof(Index));
             }
-            //ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Category1", vacancy.CategoryId);
-            ViewData["ClientId"] = new SelectList(_context.Clients, "Id", "Id", vacancy.ClientId);
+            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Category1", vacancy.CategoryId);
+           // ViewData["ClientId"] = new SelectList(_context.Clients, "Id", "Id", vacancy.ClientId);
             ViewData["EmpTypeId"] = new SelectList(_context.EmploymentTypes, "Id", "EmpType", vacancy.EmpTypeId);
-            //return View(vacancy);
-            return RedirectToAction("Index", "Vacancies", new { id = categoryId, name = _context.Categories.Where(c => c.Id == categoryId).FirstOrDefault().Category1 });
+            return View(vacancy);
         }
 
         // GET: Vacancies/Edit/5
@@ -103,7 +131,6 @@ namespace LinkNodeInfrastructure.Controllers
                 return NotFound();
             }
             ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Category1", vacancy.CategoryId);
-            ViewData["ClientId"] = new SelectList(_context.Clients, "Id", "Id", vacancy.ClientId);
             ViewData["EmpTypeId"] = new SelectList(_context.EmploymentTypes, "Id", "EmpType", vacancy.EmpTypeId);
             return View(vacancy);
         }
@@ -119,7 +146,14 @@ namespace LinkNodeInfrastructure.Controllers
             {
                 return NotFound();
             }
-
+            ModelState.Remove("ClientId");
+            ModelState.Remove("EmpTypeId");
+            ModelState.Remove("CategoryId");
+            ModelState.Remove("CreatedDate");
+            ModelState.Remove("ClosedDate");
+            ModelState.Remove("Category");
+            ModelState.Remove("Client");
+            ModelState.Remove("EmpType");
             if (ModelState.IsValid)
             {
                 try

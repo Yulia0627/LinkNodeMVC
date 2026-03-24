@@ -40,8 +40,7 @@ namespace LinkNodeInfrastructure.Controllers
                 return NotFound();
             }
 
-            // return View(category);
-            return RedirectToAction("Index", "Vacancies", new { id = category.Id, name = category.Category1 });
+            return View(category);
         }
 
         // GET: Categories/Create

@@ -1,0 +1,51 @@
+﻿@model IEnumerable<LinkNodeDomain.Model.Client>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Реєстрація клієнта</h1>
+
+<p>
+    <a asp-action="Create">Зареєструватися</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.CompanyName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.HireRate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.AvgHourlyRatePaid)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.CompanyName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.HireRate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AvgHourlyRatePaid)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Редагувати</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Деталі</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Видалити</a> |
+                    <a asp-controller="Interviews" asp-action="Index" class="btn btn-sm btn-info text-white">
+                        <i class="bi bi-calendar-event"></i> Інтерв'ю
+                    </a>
+
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

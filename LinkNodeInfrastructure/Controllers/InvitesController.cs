@@ -48,12 +48,21 @@ namespace LinkNodeInfrastructure.Controllers
         }
 
         // GET: Invites/Create
-        public IActionResult Create()
+        public IActionResult Create(int freelancerId)
         {
+            int currentClientId = 7;
+
+            var myActiveVacancies = _context.Vacancies.Where(v => v.ClientId == currentClientId && v.ClosedDate == null).ToList();
+            var invite = new Invite
+            {
+                FreelancerId = freelancerId
+            };
+            
             ViewData["FreelancerId"] = new SelectList(_context.Freelancers, "Id", "Id");
             ViewData["StatusId"] = new SelectList(_context.InviteStatuses, "Id", "InviteStatus1");
-            ViewData["VacancyId"] = new SelectList(_context.Vacancies, "Id", "Description");
-            return View();
+            ViewData["VacancyId"] = new SelectList(myActiveVacancies, "Id", "Description");
+           
+            return View(invite);
         }
 
         // POST: Invites/Create
@@ -63,15 +72,20 @@ namespace LinkNodeInfrastructure.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("FreelancerId,StatusId,VacancyId,Id")] Invite invite)
         {
+            ModelState.Remove("Freelancer");
+            ModelState.Remove("Status");
+            ModelState.Remove("Vacancy");
+
             if (ModelState.IsValid)
             {
+                invite.StatusId = 3;
                 _context.Add(invite);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["FreelancerId"] = new SelectList(_context.Freelancers, "Id", "Id", invite.FreelancerId);
+            //ViewData["FreelancerId"] = new SelectList(_context.Freelancers, "Id", "Id", invite.FreelancerId);
             ViewData["StatusId"] = new SelectList(_context.InviteStatuses, "Id", "InviteStatus1", invite.StatusId);
-            ViewData["VacancyId"] = new SelectList(_context.Vacancies, "Id", "Description", invite.VacancyId);
+            ViewData["VacancyId"] = new SelectList(_context.Vacancies, "Id", "Title", invite.VacancyId);
             return View(invite);
         }
 
@@ -171,6 +185,20 @@ namespace LinkNodeInfrastructure.Controllers
         private bool InviteExists(int id)
         {
             return _context.Invites.Any(e => e.Id == id);
+        }
+        public async Task<IActionResult> InviteList()
+        {
+            var currentFreelancerId = 9;
+            var invites = await _context.Invites
+                .Include(i => i.Vacancy)
+                .ThenInclude(v=>v.Client)
+                .ThenInclude(c => c.ClientNavigation)
+                .Include(i => i.Status)
+                .Where(i => i.FreelancerId == currentFreelancerId)
+                .OrderByDescending(i => i.Id)
+                .ToListAsync();
+            return View(invites);
+
         }
     }
 }
