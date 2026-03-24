@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
 
 namespace LinkNodeDomain.Model;
 
-public partial class User : Entity
+public partial class User : IdentityUser<int>
 {
-    [Required(ErrorMessage = "Поле не повинно бути порожнім.")]
-    [Display(Name = "Роль")]
-    public int RoleId { get; set; }
+    //[Required(ErrorMessage = "Поле не повинно бути порожнім.")]
+    //[Display(Name = "Роль")]
+    //public int RoleId { get; set; }
 
     [Required(ErrorMessage = "Поле не повинно бути порожнім.")]
     [Display(Name = "Ім'я")]
@@ -18,17 +19,17 @@ public partial class User : Entity
     [Display(Name = "Прізвище")]
     public string Surname { get; set; } = null!;
 
-    [Required(ErrorMessage = "Поле не повинно бути порожнім.")]
-    [Display(Name = "Email")]
-    public string Email { get; set; } = null!;
+    //[Required(ErrorMessage = "Поле не повинно бути порожнім.")]
+    //[Display(Name = "Email")]
+    //public string Email { get; set; } = null!;
 
-    [Required(ErrorMessage = "Поле не повинно бути порожнім.")]
-    [Display(Name = "Логін")]
-    public string Login { get; set; } = null!;
+    //[Required(ErrorMessage = "Поле не повинно бути порожнім.")]
+    //[Display(Name = "Логін")]
+    //public string Login { get; set; } = null!;
 
-    [Required(ErrorMessage = "Поле не повинно бути порожнім.")]
-    [Display(Name = "Пароль")]
-    public string Password { get; set; } = null!;
+    //[Required(ErrorMessage = "Поле не повинно бути порожнім.")]
+    //[Display(Name = "Пароль")]
+    //public string Password { get; set; } = null!;
 
     [Required(ErrorMessage = "Поле не повинно бути порожнім.")]
     [Display(Name = "Країна")]
@@ -50,6 +51,6 @@ public partial class User : Entity
 
     public virtual Freelancer? Freelancer { get; set; }
 
-    [Display(Name = "Роль")]
-    public virtual UserRole Role { get; set; } = null!;
+    //[Display(Name = "Роль")]
+    //public virtual UserRole Role { get; set; } = null!;
 }

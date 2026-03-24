@@ -1,11 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using LinkNodeDomain.Model;
+﻿using LinkNodeDomain.Model;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
 
 namespace LinkNodeInfrastructure;
 
-public partial class DbLinkNodeContext : DbContext
+public partial class DbLinkNodeContext : IdentityDbContext<User, IdentityRole<int>, int>
 {
     public DbLinkNodeContext()
     {
@@ -40,18 +42,19 @@ public partial class DbLinkNodeContext : DbContext
 
     public virtual DbSet<Proposal> Proposals { get; set; }
 
-    public virtual DbSet<User> Users { get; set; }
+   // public virtual DbSet<User> Users { get; set; }
 
-    public virtual DbSet<UserRole> UserRoles { get; set; }
+    //public virtual DbSet<UserRole> UserRoles { get; set; }
 
     public virtual DbSet<Vacancy> Vacancies { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=Freelance;Username=yuliana;Password=postgres;");
+//    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+//        => optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=Freelance;Username=yuliana;Password=postgres;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
         modelBuilder.Entity<ActionType>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("ActionTypes_pkey");
@@ -286,26 +289,26 @@ public partial class DbLinkNodeContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("Users_pkey");
 
-            entity.Property(e => e.Id).HasColumnName("userId");
+            entity.Property(e => e.Id).HasColumnName("userId").ValueGeneratedOnAdd();
             entity.Property(e => e.Country).HasColumnName("country");
             entity.Property(e => e.CreatedDate)
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("createdDate");
             entity.Property(e => e.Email).HasColumnName("email");
             entity.Property(e => e.IsActive).HasColumnName("isActive");
-            entity.Property(e => e.Login).HasColumnName("login");
+            //entity.Property(e => e.Login).HasColumnName("login");
             entity.Property(e => e.Name).HasColumnName("name");
-            entity.Property(e => e.Password).HasColumnName("password");
-            entity.Property(e => e.RoleId).HasColumnName("roleId");
+            //entity.Property(e => e.Password).HasColumnName("password");
+            //entity.Property(e => e.RoleId).HasColumnName("roleId");
             entity.Property(e => e.Surname).HasColumnName("surname");
             entity.Property(e => e.UpdatedDate)
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("updatedDate");
 
-            entity.HasOne(d => d.Role).WithMany(p => p.Users)
+            /*entity.HasOne(d => d.Role).WithMany(p => p.Users)
                 .HasForeignKey(d => d.RoleId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("Users_roleId_fkey");
+                .HasConstraintName("Users_roleId_fkey");*/
         });
 
         modelBuilder.Entity<UserRole>(entity =>

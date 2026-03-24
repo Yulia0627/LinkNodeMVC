@@ -22,8 +22,7 @@ namespace LinkNodeInfrastructure.Controllers
         // GET: Users
         public async Task<IActionResult> Index()
         {
-            var dbLinkNodeContext = _context.Users.Include(u => u.Role);
-            return View(await dbLinkNodeContext.ToListAsync());
+            return View(await _context.Users.ToListAsync());
         }
 
         // GET: Users/Details/5
@@ -35,8 +34,8 @@ namespace LinkNodeInfrastructure.Controllers
             }
 
             var user = await _context.Users
-                .Include(u => u.Role)
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (user == null)
             {
                 return NotFound();
@@ -48,45 +47,33 @@ namespace LinkNodeInfrastructure.Controllers
         // GET: Users/Create
         public IActionResult Create()
         {
-            ViewData["RoleId"] = new SelectList(_context.UserRoles, "Id", "Role");
             return View();
         }
 
         // POST: Users/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("RoleId,Name,Surname,Email,Login,Password,Country,IsActive,CreatedDate,UpdatedDate,Id")] User user)
+        public async Task<IActionResult> Create([Bind("Name,Surname,Country")] User user)
         {
-            ModelState.Remove("Role");
+          
             ModelState.Remove("CreatedDate");
             ModelState.Remove("UpdatedDate");
             ModelState.Remove("IsActive");
+
             if (ModelState.IsValid)
             {
                 user.IsActive = true;
                 user.CreatedDate = DateTime.Now;
                 user.UpdatedDate = DateTime.Now;
+
+               
+                user.UserName = user.Name + user.Surname;
+
                 _context.Add(user);
                 await _context.SaveChangesAsync();
-                
-                if (user.RoleId == 1)
-                {
-                    return RedirectToAction("Create", "Freelancers", new { id = user.Id });
-                }
-                else if (user.RoleId == 2)
-                {
-                    return RedirectToAction("Create", "Clients", new { id = user.Id });
-                }
-                else if (user.RoleId == 3)
-                {
-                    return RedirectToAction("Create", "Admins", new { id = user.Id });
-                }
 
-                return RedirectToAction(nameof(Index)); 
+                return RedirectToAction(nameof(Index));
             }
-            ViewData["RoleId"] = new SelectList(_context.UserRoles, "Id", "Role", user.RoleId);
             return View(user);
         }
 
@@ -103,16 +90,13 @@ namespace LinkNodeInfrastructure.Controllers
             {
                 return NotFound();
             }
-            ViewData["RoleId"] = new SelectList(_context.UserRoles, "Id", "Role", user.RoleId);
             return View(user);
         }
 
         // POST: Users/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("RoleId,Name,Surname,Email,Login,Password,Country,IsActive,CreatedDate,UpdatedDate,Id")] User user)
+        public async Task<IActionResult> Edit(int id, [Bind("Name,Surname,Country,IsActive,Id")] User user)
         {
             if (id != user.Id)
             {
@@ -123,8 +107,13 @@ namespace LinkNodeInfrastructure.Controllers
             {
                 try
                 {
+             
                     user.UpdatedDate = DateTime.Now;
+
                     _context.Update(user);
+            
+                    _context.Entry(user).Property(x => x.CreatedDate).IsModified = false;
+
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -140,7 +129,6 @@ namespace LinkNodeInfrastructure.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["RoleId"] = new SelectList(_context.UserRoles, "Id", "Role", user.RoleId);
             return View(user);
         }
 
@@ -153,7 +141,6 @@ namespace LinkNodeInfrastructure.Controllers
             }
 
             var user = await _context.Users
-                .Include(u => u.Role)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (user == null)
             {
