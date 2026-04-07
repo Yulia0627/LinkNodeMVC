@@ -1,79 +1,87 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using LinkNodeDomain.Model;
+using LinkNodeInfrastructure;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using LinkNodeDomain.Model;
-using LinkNodeInfrastructure;
-using Microsoft.AspNetCore.Identity;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace LinkNodeInfrastructure.Controllers
 {
     public class VacanciesController : Controller
     {
         private readonly DbLinkNodeContext _context;
+        private readonly UserManager<User> _userManager; 
 
-        public VacanciesController(DbLinkNodeContext context)
+        public VacanciesController(DbLinkNodeContext context, UserManager<User> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Vacancies
         public async Task<IActionResult> Index(int? categoryId, decimal? price, int? empTypeId)
         {
-            var currentUserId = 9;
-            //ViewData["CurrentCategory"] = categoryId;
-            ViewData["CurrentPrice"] = price;
-            //ViewData["CurrentEmpType"] = empTypeId;
-            ViewBag.CategoryId = new SelectList(_context.Categories, "Id", "Category1", categoryId);
-            ViewBag.EmpTypeId = new SelectList(_context.EmploymentTypes, "Id", "EmpType", empTypeId);
+            
+            var userIdString = _userManager.GetUserId(User);
+            int currentUserId = 0;
+            if (!string.IsNullOrEmpty(userIdString))
+            {
+                int.TryParse(userIdString, out currentUserId);
+            }
+
             var query = _context.Vacancies
                 .Include(v => v.Category)
                 .Include(v => v.Client)
                 .Include(v => v.EmpType)
                 .AsQueryable();
-                
-           if (currentUserId == 9)
-           {
 
-              query = query.Where(v => v.ClosedDate == null);
-           }
+            query = query.Where(v => v.ClosedDate == null || v.ClientId == currentUserId);
+
+          
             if (categoryId.HasValue)
             {
                 query = query.Where(v => v.CategoryId == categoryId.Value);
             }
             if (price.HasValue)
             {
-            query = query.Where(v => v.Price >= price.Value);
+                query = query.Where(v => v.Price >= price.Value);
             }
             if (empTypeId.HasValue)
             {
                 query = query.Where(v => v.EmpTypeId == empTypeId.Value);
             }
-            query = query.Where(v => v.ClosedDate == null);
+
             query = query.OrderByDescending(v => v.CreatedDate);
+
+            
+            ViewBag.CurrentClientId = currentUserId;
+            ViewData["CurrentPrice"] = price;
+            ViewBag.CategoryId = new SelectList(_context.Categories, "Id", "Category1", categoryId);
+            ViewBag.EmpTypeId = new SelectList(_context.EmploymentTypes, "Id", "EmpType", empTypeId);
+
             return View(await query.ToListAsync());
         }
 
         // GET: Vacancies/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var vacancy = await _context.Vacancies
+                .Include(v => v.Category)
+                .Include(v => v.EmpType)
+                .Include(v => v.Client)
                 .Include(v => v.Proposals)
-                .ThenInclude(p=>p.Freelancer)
-                .ThenInclude(f=>f.FreelancerNavigation)
+                    .ThenInclude(p => p.Freelancer)
+                    .ThenInclude(f => f.FreelancerNavigation)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (vacancy == null)
-            {
-                return NotFound();
-            }
+
+            if (vacancy == null) return NotFound();
 
             return View(vacancy);
         }
@@ -82,78 +90,75 @@ namespace LinkNodeInfrastructure.Controllers
         public IActionResult Create()
         {
             ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Category1");
-            ViewData["ClientId"] = new SelectList(_context.Clients, "Id", "Id");
             ViewData["EmpTypeId"] = new SelectList(_context.EmploymentTypes, "Id", "EmpType");
             return View();
         }
 
         // POST: Vacancies/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ClientId,Title,EmpTypeId,CategoryId,Price,Description,CreatedDate,ClosedDate,Id")] Vacancy vacancy)
+        [Authorize(Roles = "client")]
+        public async Task<IActionResult> Create([Bind("Title,EmpTypeId,CategoryId,Price,Description")] Vacancy vacancy)
         {
+            var userIdString = _userManager.GetUserId(User);
+            if (string.IsNullOrEmpty(userIdString)) return Challenge();
+
+            
             ModelState.Remove("ClientId");
-            ModelState.Remove("EmpTypeId");
-            ModelState.Remove("CategoryId");
             ModelState.Remove("CreatedDate");
-            ModelState.Remove("ClosedDate");
             ModelState.Remove("Category");
             ModelState.Remove("Client");
             ModelState.Remove("EmpType");
 
             if (ModelState.IsValid)
             {
-                vacancy.ClientId = 7;
+                vacancy.ClientId = int.Parse(userIdString);
                 vacancy.CreatedDate = DateTime.Now;
+
                 _context.Add(vacancy);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
             ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Category1", vacancy.CategoryId);
-           // ViewData["ClientId"] = new SelectList(_context.Clients, "Id", "Id", vacancy.ClientId);
             ViewData["EmpTypeId"] = new SelectList(_context.EmploymentTypes, "Id", "EmpType", vacancy.EmpTypeId);
             return View(vacancy);
         }
 
         // GET: Vacancies/Edit/5
+        [Authorize(Roles = "client")]
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var vacancy = await _context.Vacancies.FindAsync(id);
-            if (vacancy == null)
-            {
-                return NotFound();
-            }
+            if (vacancy == null) return NotFound();
+
+           
+            var userIdString = _userManager.GetUserId(User);
+            if (vacancy.ClientId.ToString() != userIdString) return Forbid();
+
             ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Category1", vacancy.CategoryId);
             ViewData["EmpTypeId"] = new SelectList(_context.EmploymentTypes, "Id", "EmpType", vacancy.EmpTypeId);
             return View(vacancy);
         }
 
         // POST: Vacancies/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ClientId,Title,EmpTypeId,CategoryId,Price,Description,CreatedDate,ClosedDate,Id")] Vacancy vacancy)
+        [Authorize(Roles = "client")]
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,EmpTypeId,CategoryId,Price,Description,CreatedDate,ClientId")] Vacancy vacancy)
         {
-            if (id != vacancy.Id)
-            {
-                return NotFound();
-            }
-            ModelState.Remove("ClientId");
-            ModelState.Remove("EmpTypeId");
-            ModelState.Remove("CategoryId");
-            ModelState.Remove("CreatedDate");
-            ModelState.Remove("ClosedDate");
+            if (id != vacancy.Id) return NotFound();
+
+            
+            var userIdString = _userManager.GetUserId(User);
+            if (vacancy.ClientId.ToString() != userIdString) return Forbid();
+
             ModelState.Remove("Category");
             ModelState.Remove("Client");
             ModelState.Remove("EmpType");
+
             if (ModelState.IsValid)
             {
                 try
@@ -163,40 +168,33 @@ namespace LinkNodeInfrastructure.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!VacancyExists(vacancy.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    if (!VacancyExists(vacancy.Id)) return NotFound();
+                    else throw;
                 }
                 return RedirectToAction(nameof(Index));
             }
             ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Category1", vacancy.CategoryId);
-            ViewData["ClientId"] = new SelectList(_context.Clients, "Id", "Id", vacancy.ClientId);
             ViewData["EmpTypeId"] = new SelectList(_context.EmploymentTypes, "Id", "EmpType", vacancy.EmpTypeId);
             return View(vacancy);
         }
 
         // GET: Vacancies/Delete/5
+        [Authorize(Roles = "client")]
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var vacancy = await _context.Vacancies
                 .Include(v => v.Category)
                 .Include(v => v.Client)
                 .Include(v => v.EmpType)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (vacancy == null)
-            {
-                return NotFound();
-            }
+
+            if (vacancy == null) return NotFound();
+
+            
+            var userIdString = _userManager.GetUserId(User);
+            if (vacancy.ClientId.ToString() != userIdString) return Forbid();
 
             return View(vacancy);
         }
@@ -204,33 +202,44 @@ namespace LinkNodeInfrastructure.Controllers
         // POST: Vacancies/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "client")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var vacancy = await _context.Vacancies.FindAsync(id);
-            if (vacancy != null)
+            if (vacancy == null) return NotFound();
+
+            var userIdString = _userManager.GetUserId(User);
+            if (vacancy.ClientId.ToString() != userIdString) return Forbid();
+
+            _context.Vacancies.Remove(vacancy);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        // POST: Vacancies/Close/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "client")]
+        public async Task<IActionResult> Close(int id)
+        {
+            var vacancy = await _context.Vacancies.FirstOrDefaultAsync(v => v.Id == id);
+            if (vacancy == null) return NotFound();
+
+            var userIdString = _userManager.GetUserId(User);
+
+           
+            if (vacancy.ClientId.ToString() == userIdString)
             {
-                _context.Vacancies.Remove(vacancy);
+                vacancy.ClosedDate = DateTime.Now;
+                await _context.SaveChangesAsync();
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool VacancyExists(int id)
         {
             return _context.Vacancies.Any(e => e.Id == id);
-        }
-        [HttpPost]
-        public async Task<IActionResult> Close(int id)
-        {
-            var vacancy = await _context.Vacancies.FirstOrDefaultAsync(v => v.Id == id);
-
-            if (vacancy != null)
-            {
-                vacancy.ClosedDate = DateTime.Now;
-                await _context.SaveChangesAsync();
-            }
-            return RedirectToAction(nameof(Index));
         }
     }
 }

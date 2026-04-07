@@ -1,8 +1,11 @@
 ﻿@model IEnumerable<LinkNodeDomain.Model.Invite>
 
 <div class="container mt-4">
+    <div class="d-flex justify-content-center mb-4">
+        @await Html.PartialAsync("_NavigationTabs")
+    </div>
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="fw-bold text-primary">📩 Мої запрошення</h1>
+        <h1 class="fw-bold text-primary">📩 Інвайти</h1>
         <span class="badge bg-primary rounded-pill">Всього: @Model.Count()</span>
     </div>
 
@@ -34,10 +37,7 @@
                                             <p class="text-primary fw-semibold mb-2">
                                                 <i class="bi bi-building"></i> @item.Vacancy.Client.CompanyName
                                             </p>
-                                            <div class="text-muted small">
-                                                <i class="bi bi-person-circle"></i>
-                                                Менеджер: @item.Vacancy.Client.ClientNavigation.Name @item.Vacancy.Client.ClientNavigation.Surname
-                                            </div>
+                                           
                                         </div>
                                         <span class="badge @(item.StatusId == 1 ? "bg-warning" : "bg-success") px-3 py-2">
                                             @item.Status.InviteStatus1
@@ -47,12 +47,17 @@
                                     <hr class="my-3 opacity-25">
 
                                     <div class="d-flex justify-content-end gap-2">
-                                        <a asp-controller="Vacancies" asp-action="Index" asp-route-id="@item.VacancyId"
+                                        <a asp-controller="Vacancies" asp-action="Details" asp-route-id="@item.VacancyId"
                                            class="btn btn-outline-primary btn-sm px-4 rounded-pill">
                                             Деталі вакансії
                                         </a>
-                                        <button class="btn btn-success btn-sm px-4 rounded-pill">Прийняти</button>
-                                        <button class="btn btn-light btn-sm px-4 rounded-pill">Відхилити</button>
+                                        
+                                        <form asp-action="Decline" asp-route-id="@item.Id" method="post" style="display:inline;">
+                                            <button type="submit" class="btn btn-light btn-sm px-4 rounded-pill"
+                                                    onclick="return confirm('Ви впевнені, що хочете відхилити це запрошення?')">
+                                                Відхилити
+                                            </button>
+                                        </form>
                                     </div>
                                 </div>
                             </div>

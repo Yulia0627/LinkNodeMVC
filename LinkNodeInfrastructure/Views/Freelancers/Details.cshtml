@@ -1,4 +1,5 @@
 ﻿@model LinkNodeDomain.Model.Freelancer
+@using System.Security.Claims
 
 @{
     ViewData["Title"] = "Профіль фрілансера";
@@ -7,6 +8,9 @@
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-lg-9">
+            <div class="d-flex justify-content-center mb-4">
+                @await Html.PartialAsync("_NavigationTabs")
+            </div>
             <div class="card shadow-sm border-0 custom-card">
 
                 <div class="card-header border-0 py-4 header-dark text-center">
@@ -24,20 +28,19 @@
                 <div class="card-body p-5">
                     <div class="row g-4">
                         <div class="col-md-8">
-                            <h5 class="fw-bold border-bottom pb-2 mb-3">Про себе</h5>
-                            <p class="text-dark fs-5" style="line-height: 1.6;">
-                                @(string.IsNullOrEmpty(Model.Description) ? "Опис відсутній" : Model.Description)
-                            </p>
+                            <div class="mb-5">
+                                <h5 class="fw-bold border-bottom pb-2 mb-3">Локація</h5>
+                                <p class="text-dark fs-5">
+                                    <i class="bi bi-geo-alt me-2 text-danger"></i>
+                                    @Model.FreelancerNavigation?.Country
+                                </p>
+                            </div>
 
-                            <div class="row mt-4">
-                                <div class="col-sm-6">
-                                    <h6 class="text-muted small text-uppercase">Email</h6>
-                                    <p class="fw-bold"><i class="bi bi-envelope me-2 text-primary"></i>@Model.FreelancerNavigation?.Email</p>
-                                </div>
-                                <div class="col-sm-6">
-                                    <h6 class="text-muted small text-uppercase">Країна</h6>
-                                    <p class="fw-bold"><i class="bi bi-geo-alt me-2 text-danger"></i>@Model.FreelancerNavigation?.Country</p>
-                                </div>
+                            <div>
+                                <h5 class="fw-bold border-bottom pb-2 mb-3">Про себе</h5>
+                                <p class="text-dark fs-5" style="line-height: 1.6;">
+                                    @(string.IsNullOrEmpty(Model.Description) ? "Опис відсутній" : Model.Description)
+                                </p>
                             </div>
                         </div>
 
@@ -48,6 +51,25 @@
                                 <small class="text-muted">за годину</small>
                             </div>
 
+                           
+                            @if (User.Identity.IsAuthenticated)
+                            {
+                                var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                                if (currentUserId == Model.Id.ToString())
+                                {
+                                    <div class="mt-3">
+                                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary w-100 shadow-sm">
+                                            <i class="bi bi-pencil-square me-2"></i>Редагувати профіль
+                                        </a>
+                                    </div>
+                                }
+                            }
+                        </div>
+
+                        <div class="col-12 mt-5">
+                            <h5 class="fw-bold border-bottom pb-2 mb-3">Статистика поданих пропозицій</h5>
+                            <div class="p-3 bg-white rounded-3 shadow-sm border">
+                                <div id="freelancerActivityChart" style="width: 100%; height: 300px;"></div>
                             </div>
                         </div>
                     </div>
@@ -83,18 +105,44 @@
         background-color: white !important;
     }
 
-    .custom-btn {
-        background-color: #2c3e50;
-        border: none;
-        transition: all 0.3s ease;
-    }
-
-        .custom-btn:hover {
-            background-color: #1a252f;
-            transform: translateY(-2px);
-        }
-
     .bg-light {
         background-color: #f8f9fa !important;
     }
 </style>
+
+@section Scripts {
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+        google.charts.load('current', {'packages':['corechart']});
+        google.charts.setOnLoadCallback(drawChart);
+
+        function drawChart() {
+            const freelancerId = @Model.Id;
+
+            fetch(`/api/stats/freelancer-proposals-activity?freelancerId=${freelancerId}`)
+                .then(response => response.json())
+                .then(data => {
+                    var chartData = new google.visualization.DataTable();
+                    chartData.addColumn('string', 'Місяць');
+                    chartData.addColumn('number', 'Пропозиції');
+
+                    data.forEach(item => {
+                        chartData.addRow([item.month + '/' + item.year, item.proposalsCount]);
+                    });
+
+                    var options = {
+                        legend: { position: 'none' },
+                        colors: ['#2c3e50'],
+                        hAxis: { textStyle: { color: '#6c757d', fontSize: 11 } },
+                        vAxis: { minValue: 0, gridlines: { color: '#f0f0f0' }, format: '0' },
+                        chartArea: { width: '90%', height: '80%' },
+                        animation: { startup: true, duration: 800, easing: 'out' }
+                    };
+
+                    var chart = new google.visualization.ColumnChart(document.getElementById('freelancerActivityChart'));
+                    chart.draw(chartData, options);
+                })
+                .catch(error => console.error('Помилка завантаження статистики:', error));
+        }
+    </script>
+}

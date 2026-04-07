@@ -22,6 +22,8 @@ public partial class Vacancy : Entity
 
     [Required(ErrorMessage = "Поле не повинно бути порожнім.")]
     [Display(Name = "Погодинна оплата")]
+    [Range(typeof(decimal), "0", "100000000", ErrorMessage = "Ставка повинна бути в межах від 0 до 100000000.")]
+    [DataType(DataType.Currency)]
     public decimal Price { get; set; }
 
     [Required(ErrorMessage = "Поле не повинно бути порожнім.")]
@@ -29,7 +31,7 @@ public partial class Vacancy : Entity
     public string Description { get; set; } = null!;
 
     [Display(Name = "Дата створення")]
-    public DateTime CreatedDate { get; set; }
+    public DateTime CreatedDate { get; set; } = DateTime.Now;
 
     [Display(Name = "Дата закриття")]
     public DateTime? ClosedDate { get; set; }

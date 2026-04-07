@@ -9,7 +9,7 @@ namespace LinkNodeInfrastructure
     {
         public static async Task InitializeAsync(UserManager<User> userManager, RoleManager<IdentityRole<int>> roleManager)
         {
-            string adminEmail = "admin@gmail.com";
+            string adminEmail = "admin1@gmail.comadmin1@gmail.com";
             string password = "Qwerty_1";
 
             string[] roles = new string[] { "admin", "client", "freelancer" };
@@ -36,6 +36,7 @@ namespace LinkNodeInfrastructure
                     UpdatedDate = DateTime.UtcNow
                 };
 
+                
                 IdentityResult result = await userManager.CreateAsync(admin, password);
 
                 if (result.Succeeded)
@@ -46,7 +47,7 @@ namespace LinkNodeInfrastructure
                 {
                     foreach (var error in result.Errors)
                     {
-                        Console.WriteLine($"ПОМИЛКА СТВОРЕННЯ АДМІНА: {error.Description}");
+                        System.Diagnostics.Debug.WriteLine($"ПОМИЛКА IDENTITY: {error.Code} - {error.Description}");
                     }
                 }
             }

@@ -1,49 +1,123 @@
 ﻿@model LinkNodeDomain.Model.Freelancer
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Редагування профілю";
 }
 
-<h1>Edit</h1>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold text-dark mb-0">Редагування профілю</h2>
+                <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-link text-muted text-decoration-none">
+                    <i class="bi bi-arrow-left me-1"></i> Скасувати
+                </a>
+            </div>
 
-<h4>Freelancer</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="CategoryId" class="control-label"></label>
-                <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.CategoryId"></select>
-                <span asp-validation-for="CategoryId" class="text-danger"></span>
+            <div class="card shadow-sm border-0 custom-card">
+                <div class="card-body p-4 p-md-5">
+                    <form asp-action="Edit">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger border-0 shadow-sm" role="alert"></div>
+                        <input type="hidden" asp-for="Id" />
+
+                        
+                        <div class="mb-4">
+                            <label asp-for="CategoryId" class="form-label fw-bold small text-uppercase text-muted">Спеціалізація</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0"><i class="bi bi-briefcase text-primary"></i></span>
+                                <select asp-for="CategoryId" class="form-select border-start-0 ps-0" asp-items="ViewBag.CategoryId"></select>
+                            </div>
+                            <span asp-validation-for="CategoryId" class="text-danger small"></span>
+                        </div>
+
+                        
+                        <div class="mb-4">
+                            <label asp-for="HourlyRate" class="form-label fw-bold small text-uppercase text-muted">Погодинна ставка ($)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0 text-success fw-bold">$</span>
+                                <input asp-for="HourlyRate" class="form-control border-start-0 ps-0" placeholder="0.00" />
+                            </div>
+                            <span asp-validation-for="HourlyRate" class="text-danger small"></span>
+                        </div>
+
+                       
+                        <div class="mb-4">
+                            <label asp-for="EmpTypeId" class="form-label fw-bold small text-uppercase text-muted">Тип зайнятості</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0"><i class="bi bi-clock text-primary"></i></span>
+                                <select asp-for="EmpTypeId" class="form-select border-start-0 ps-0" asp-items="ViewBag.EmpTypeId"></select>
+                            </div>
+                            <span asp-validation-for="EmpTypeId" class="text-danger small"></span>
+                        </div>
+
+                        
+                        <div class="mb-4">
+                            <label asp-for="Description" class="form-label fw-bold small text-uppercase text-muted">Про себе</label>
+                            <textarea asp-for="Description" class="form-control" rows="6" placeholder="Розкажіть про свій досвід та навички..."></textarea>
+                            <span asp-validation-for="Description" class="text-danger small"></span>
+                        </div>
+
+                      
+                        <div class="d-grid gap-2 mt-5">
+                            <button type="submit" class="btn btn-primary btn-lg shadow-sm">
+                                <i class="bi bi-check-lg me-2"></i> Зберегти зміни
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="HourlyRate" class="control-label"></label>
-                <input asp-for="HourlyRate" class="form-control" />
-                <span asp-validation-for="HourlyRate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="EmpTypeId" class="control-label"></label>
-                <select asp-for="EmpTypeId" class="form-control" asp-items="ViewBag.EmpTypeId"></select>
-                <span asp-validation-for="EmpTypeId" class="text-danger"></span>
-            </div>
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+<style>
+    body {
+        background-color: #f4f7f6;
+    }
+
+    .custom-card {
+        border-radius: 16px;
+    }
+
+    .form-label {
+        letter-spacing: 0.5px;
+    }
+
+    .form-control, .form-select, .input-group-text {
+        border: 1px solid #e0e6ed;
+        padding: 0.75rem 1rem;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.05);
+        }
+
+    .input-group-text {
+        color: #6c757d;
+    }
+
+    textarea.form-control {
+        resize: none;
+    }
+
+    .btn-primary {
+        background-color: #2c3e50;
+        border-color: #2c3e50;
+        padding-top: 0.8rem;
+        padding-bottom: 0.8rem;
+        border-radius: 10px;
+    }
+
+        .btn-primary:hover {
+            background-color: #1a252f;
+            border-color: #1a252f;
+        }
+</style>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

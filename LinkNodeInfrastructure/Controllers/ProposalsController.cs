@@ -1,22 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using LinkNodeDomain.Model;
+using LinkNodeInfrastructure;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using LinkNodeDomain.Model;
-using LinkNodeInfrastructure;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace LinkNodeInfrastructure.Controllers
 {
     public class ProposalsController : Controller
     {
         private readonly DbLinkNodeContext _context;
-
-        public ProposalsController(DbLinkNodeContext context)
+        private readonly UserManager<User> _userManager;
+        public ProposalsController(DbLinkNodeContext context, UserManager<User> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Proposals
@@ -75,11 +77,22 @@ namespace LinkNodeInfrastructure.Controllers
             ModelState.Remove("CreatedDate");
             if (ModelState.IsValid)
             {
-                proposal.FreelancerId = 4;
+                var userId = _userManager.GetUserId(User);
+                proposal.FreelancerId = int.Parse(userId);
                 proposal.CreatedDate = DateTime.Now;
                 _context.Add(proposal);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                var invite = await _context.Invites
+            .FirstOrDefaultAsync(i => i.VacancyId == proposal.VacancyId && i.FreelancerId == proposal.FreelancerId);
+                if (invite != null)
+                {
+                    invite.StatusId = 2;
+                    _context.Update(invite);
+                    await _context.SaveChangesAsync();
+                }
+               
+
+                return RedirectToAction("Details", "Vacancies", new { id = proposal.VacancyId });
             }
             //ViewData["FreelancerId"] = new SelectList(_context.Freelancers, "Id", "Id", proposal.FreelancerId);
             //ViewData["VacancyId"] = new SelectList(_context.Vacancies, "Id", "Description", proposal.VacancyId);
@@ -180,5 +193,6 @@ namespace LinkNodeInfrastructure.Controllers
         {
             return _context.Proposals.Any(e => e.Id == id);
         }
+       
     }
 }

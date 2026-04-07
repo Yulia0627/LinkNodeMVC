@@ -1,49 +1,56 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Головна сторінка";
 }
 
-@*<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>*@
+<div class="container mt-4">
+    <div class="d-flex justify-content-center gap-3 mb-5 p-4 bg-light rounded shadow-sm">
+        <a asp-controller="Account" asp-action="Login" class="btn btn-primary px-5">Вхід</a>
+        <a asp-controller="Account" asp-action="Register" class="btn btn-outline-primary px-5">Реєстрація</a>
+    </div>
 
-<div class="text-center">
-    <h1 class="display-4">LinkNode</h1>
+    <div class="text-center mb-4">
+        <h1 class="display-4 fw-bold">LinkNode</h1>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title border-bottom pb-2 mb-3 text-secondary">Навігація по системі</h5>
+                    <ul class="nav flex-column">
+                        <li class="nav-item mb-2">
+                            <a class="nav-link p-0 text-dark" asp-controller="userroles" asp-action="index">● ролі користувачів</a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link p-0 text-dark" asp-controller="users" asp-action="index">● користувачі</a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link p-0 text-dark" asp-controller="clients" asp-action="index">● клієнти</a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link p-0 text-dark" asp-controller="freelancers" asp-action="index">● фрілансери</a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link p-0 text-dark" asp-controller="categories" asp-action="index">● категорії</a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link p-0 text-dark" asp-controller="vacancies" asp-action="index">● вакансії</a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link p-0 text-dark" asp-controller="employmenttypes" asp-action="index">● типи зайнятості</a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link p-0 text-dark" asp-controller="invitestatus" asp-action="index">● статус запрошення</a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link p-0 text-dark" asp-controller="introstatus" asp-action="index">● статус інтерв'ю</a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link p-0 text-dark" asp-controller="actiontypes" asp-action="index">● дії адміністратора</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-
-<ul>
-    <li class="nav-item">
-        <a asp-controller="UserRoles" asp-action="Index">Ролі користувачів</a>
-    </li>
-    <li class="nav-item">
-        <a asp-controller="Users" asp-action="Index">Користувачі</a>
-    </li>
-    <li class="nav-item">
-        <a asp-controller="Clients" asp-action="Index">Клієнти</a>
-    </li>
-    <li class="nav-item">
-        <a asp-controller="Freelancers" asp-action="Index">Фрілансери</a>
-    </li>
-    <li class="nav-item">
-        <a asp-controller="Categories" asp-action="Index">Категорії</a>
-    </li>
-    <li class="nav-item">
-        <a asp-controller="Vacancies" asp-action="Index">Вакансії</a>
-    </li>
-    <li class="nav-item">
-        <a asp-controller="EmploymentTypes" asp-action="Index">Типи зайнятості</a>
-    </li>
-    <li class="nav-item">
-        <a asp-controller="InviteStatus" asp-action="Index">Статус запрошення</a>
-    </li>
-    <li class="nav-item">
-        <a asp-controller="IntroStatus" asp-action="Index">Статус інтерв'ю</a>
-    </li>
-    <li class="nav-item">
-        <a asp-controller="ActionTypes" asp-action="Index">Дії адміністратора</a>
-    </li>
-    <a asp-controller="Account" asp-action="Login">Вхід</a>
-    <a asp-controller="Account" asp-action="Register">Реєстація</a>
-</ul>
-
-

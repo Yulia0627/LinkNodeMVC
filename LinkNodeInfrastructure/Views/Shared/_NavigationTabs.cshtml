@@ -1,0 +1,121 @@
+﻿@using System.Security.Claims
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    var isFreelancer = User.IsInRole("freelancer");
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 border-bottom">
+    <ul class="nav nav-tabs border-0">
+        @if (isFreelancer)
+        {
+            <li class="nav-item">
+                <a class="nav-link @(currentController == "Freelancers" ? "active fw-bold border-bottom border-3 border-primary" : "text-muted")"
+                   asp-controller="Freelancers" asp-action="Details" asp-route-id="@userId">
+                    <i class="bi bi-person me-2"></i>Мій профіль
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(currentController == "Vacancies" ? "active fw-bold border-bottom border-3 border-primary" : "text-muted")"
+                   asp-controller="Vacancies" asp-action="Index">
+                    <i class="bi bi-briefcase me-2"></i>Вакансії
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(currentController == "Invites" ? "active fw-bold border-bottom border-3 border-primary" : "text-muted")"
+                   asp-controller="Invites" asp-action="Index">
+                    <i class="bi bi-envelope-paper me-2"></i>Інвайти
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(currentController == "Interviews" ? "active fw-bold border-bottom border-3 border-primary" : "text-muted")"
+                   asp-controller="Interviews" asp-action="Index">
+                    <i class="bi bi-chat-dots me-2"></i>Інтерв'ю
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(currentController == "Proposals" ? "active fw-bold border-bottom border-3 border-primary" : "text-muted")"
+                   asp-controller="Proposals" asp-action="Index">
+                    <i class="bi bi-file-earmark-text me-2"></i>Пропоузали
+                </a>
+            </li>
+        }
+        else
+        {
+            <li class="nav-item">
+                <a class="nav-link @(currentController == "Freelancers" ? "active fw-bold border-bottom border-3 border-primary" : "text-muted")"
+                   asp-controller="Freelancers" asp-action="Index">
+                    <i class="bi bi-people me-2"></i>Фрілансери
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(currentController == "Vacancies" ? "active fw-bold border-bottom border-3 border-primary" : "text-muted")"
+                   asp-controller="Vacancies" asp-action="Index">
+                    <i class="bi bi-briefcase me-2"></i>Вакансії
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(currentController == "Interviews" ? "active fw-bold border-bottom border-3 border-primary" : "text-muted")"
+                   asp-controller="Interviews" asp-action="Index">
+                    <i class="bi bi-people me-2"></i>Інтерв'ю
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(currentController == "Invites" ? "active fw-bold border-bottom border-3 border-primary" : "text-muted")"
+                   asp-controller="Invites" asp-action="Index">
+                    <i class="bi bi-briefcase me-2"></i>Інвайти
+                </a>
+            </li>
+
+            <div class="d-flex align-items-center ms-3 gap-2">
+                <a asp-controller="Clients" asp-action="Import"
+                   class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-bold shadow-sm transition-hover-blue">
+                    <i class="bi bi-file-earmark-arrow-up me-1"></i> Імпорт
+                </a>
+
+                <a asp-controller="Clients" asp-action="Export"
+                   class="btn btn-outline-success btn-sm rounded-pill px-3 fw-bold shadow-sm transition-hover-green">
+                    <i class="bi bi-file-earmark-arrow-down me-1"></i> Експорт
+                </a>
+            </div>
+        }
+    </ul>
+
+    <div class="ms-auto mb-2">
+        <form asp-controller="Account" asp-action="Logout" method="post" class="form-inline">
+            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold shadow-sm transition-hover">
+                <i class="bi bi-box-arrow-right me-1"></i> Вийти
+            </button>
+        </form>
+    </div>
+</div>
+
+<style>
+    
+    .transition-hover,
+    .transition-hover-blue,
+    .transition-hover-green {
+        transition: all 0.3s ease;
+    }
+
+       
+        .transition-hover:hover {
+            background-color: #dc3545;
+            color: white;
+            transform: scale(1.05);
+        }
+
+      
+        .transition-hover-blue:hover {
+            background-color: #0d6efd;
+            color: white;
+            transform: scale(1.05);
+        }
+
+       
+        .transition-hover-green:hover {
+            background-color: #198754;
+            color: white;
+            transform: scale(1.05);
+        }
+</style>

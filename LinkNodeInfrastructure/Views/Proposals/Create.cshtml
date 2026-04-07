@@ -28,7 +28,7 @@
                             <label asp-for="Price" class="form-label fw-bold small text-dark">Вартість виконання (₴)</label>
                             <div class="input-group shadow-sm-hover">
                                 <span class="input-group-text bg-light border-1 fw-bold text-muted">₴</span>
-                                <input asp-for="Price" class="form-control bg-light border-1 py-2" placeholder="Наприклад: 5000" type="number" step="0.01" />
+                                <input asp-for="Price" class="form-control bg-light border-1 py-2" placeholder="Наприклад: 5000" type="number" step="0.01" min="0" />
                             </div>
                             <span asp-validation-for="Price" class="text-danger small"></span>
                         </div>
@@ -49,11 +49,7 @@
                             </button>
                         </div>
 
-                        <div class="text-center">
-                            <a asp-action="Index" asp-controller="Vacancies" class="text-muted small text-decoration-underline">
-                                <i class="bi bi-arrow-left"></i> Назад до вакансій
-                            </a>
-                        </div>
+                        
                     </form>
                 </div>
             </div>

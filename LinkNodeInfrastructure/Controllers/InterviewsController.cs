@@ -29,23 +29,18 @@ namespace LinkNodeInfrastructure.Controllers
         // GET: Interviews/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var interview = await _context.Interviews
-         .Include(i => i.IntroStatus)
-         .Include(i => i.Prop)
-         .Include(i => i.CallStatusStories)
-             .ThenInclude(s => s.OldStatus)
-         .Include(i => i.CallStatusStories)
-             .ThenInclude(s => s.NewStatus)
-         .FirstOrDefaultAsync(m => m.Id == id);
-            if (interview == null)
-            {
-                return NotFound();
-            }
+                .Include(i => i.IntroStatus)
+                .Include(i => i.Prop)
+                .Include(i => i.CallStatusStories)
+                    .ThenInclude(s => s.OldStatus)
+                .Include(i => i.CallStatusStories)
+                    .ThenInclude(s => s.NewStatus)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (interview == null) return NotFound();
 
             return View(interview);
         }
@@ -60,14 +55,12 @@ namespace LinkNodeInfrastructure.Controllers
                 DateTime = tomorrow
             };
             ViewData["IntroStatusId"] = new SelectList(_context.IntroStatuses, "Id", "Status");
-            ViewData["PropId"] = new SelectList(_context.Proposals, "Id", "Description");
+            ViewData["PropId"] = new SelectList(_context.Proposals, "Id", "Title");
             ModelState.Clear();
             return View(interview);
         }
 
         // POST: Interviews/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("PropId,DateTime,Reference,InterviewRound,IntroStatusId,CreatedDate,Id")] Interview interview)
@@ -76,9 +69,14 @@ namespace LinkNodeInfrastructure.Controllers
             ModelState.Remove("IntroStatus");
             ModelState.Remove("CreatedDate");
 
+            if (interview.DateTime < DateTime.Now)
+            {
+                ModelState.AddModelError("DateTime", "Не можна призначити інтерв'ю на минулу дату або час.");
+            }
+
             if (ModelState.IsValid)
             {
-                interview.IntroStatusId = 1;
+                interview.IntroStatusId = 1; 
                 interview.CreatedDate = DateTime.Now;
                 _context.Add(interview);
                 await _context.SaveChangesAsync();
@@ -92,24 +90,17 @@ namespace LinkNodeInfrastructure.Controllers
         // GET: Interviews/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var interview = await _context.Interviews.FindAsync(id);
-            if (interview == null)
-            {
-                return NotFound();
-            }
+            if (interview == null) return NotFound();
+
             ViewData["IntroStatusId"] = new SelectList(_context.IntroStatuses, "Id", "Status", interview.IntroStatusId);
             ViewData["PropId"] = new SelectList(_context.Proposals, "Id", "Description", interview.PropId);
             return View(interview);
         }
 
         // POST: Interviews/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("PropId,DateTime,Reference,InterviewRound,IntroStatusId,CreatedDate,Id")] Interview interview)
@@ -117,23 +108,20 @@ namespace LinkNodeInfrastructure.Controllers
             ModelState.Remove("Prop");
             ModelState.Remove("IntroStatus");
 
-            if (id != interview.Id)
-            {
-                return NotFound();
-            }
+            if (id != interview.Id) return NotFound();
 
             if (ModelState.IsValid)
             {
                 try
                 {
                     var oldInterview = await _context.Interviews
-                .AsNoTracking()
-                .FirstOrDefaultAsync(i => i.Id == id);
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(i => i.Id == id);
 
                     if (oldInterview != null)
                     {
-                        int changedStatusId = 4;
-                        if (interview.IntroStatusId != changedStatusId)
+                        int changedStatusId = 4; 
+                        if (oldInterview.IntroStatusId != changedStatusId)
                         {
                             var story = new CallStatusStory
                             {
@@ -151,14 +139,8 @@ namespace LinkNodeInfrastructure.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!InterviewExists(interview.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    if (!InterviewExists(interview.Id)) return NotFound();
+                    else throw;
                 }
                 return RedirectToAction(nameof(Index));
             }
@@ -167,22 +149,46 @@ namespace LinkNodeInfrastructure.Controllers
             return View(interview);
         }
 
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Confirm(int id)
+        {
+            var interview = await _context.Interviews.FindAsync(id);
+            if (interview == null) return NotFound();
+
+            int confirmedStatusId = 2; 
+
+            if (interview.IntroStatusId != confirmedStatusId)
+            {
+                var story = new CallStatusStory
+                {
+                    IntroId = interview.Id,
+                    OldStatusId = interview.IntroStatusId,
+                    NewStatusId = confirmedStatusId,
+                    ChangedDate = DateTime.Now
+                };
+                _context.CallStatusStories.Add(story);
+
+                interview.IntroStatusId = confirmedStatusId;
+                _context.Update(interview);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
         // GET: Interviews/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var interview = await _context.Interviews
                 .Include(i => i.IntroStatus)
                 .Include(i => i.Prop)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (interview == null)
-            {
-                return NotFound();
-            }
+
+            if (interview == null) return NotFound();
 
             return View(interview);
         }
@@ -195,7 +201,8 @@ namespace LinkNodeInfrastructure.Controllers
             var interview = await _context.Interviews.FindAsync(id);
             if (interview != null)
             {
-                int cancelledStatusId = 5;
+                int cancelledStatusId = 5; 
+
                 var story = new CallStatusStory
                 {
                     IntroId = interview.Id,
@@ -204,15 +211,13 @@ namespace LinkNodeInfrastructure.Controllers
                     ChangedDate = DateTime.Now
                 };
                 _context.CallStatusStories.Add(story);
+
                 interview.IntroStatusId = cancelledStatusId;
                 _context.Update(interview);
                 await _context.SaveChangesAsync();
-                
-
             }
             return RedirectToAction(nameof(Index));
         }
-   
 
         private bool InterviewExists(int id)
         {

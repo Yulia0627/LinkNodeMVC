@@ -1,55 +1,170 @@
 ﻿@model LinkNodeDomain.Model.Vacancy
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<LinkNodeDomain.Model.User> UserManager
 
 @{
     ViewData["Title"] = "Деталі вакансії";
+
+    
+    var userIdString = UserManager.GetUserId(User);
+    int currentUserId = 0;
+    if (!string.IsNullOrEmpty(userIdString))
+    {
+        int.TryParse(userIdString, out currentUserId);
+    }
+
+    
+    var isOwner = (Model.ClientId == currentUserId);
 }
-
 <div class="container mt-4">
-    <hr />
-
-    <div class="row">
-        <div class="col-md-10 offset-md-1">
-            <h3 class="mb-3">Пропозиції від фрілансерів (@Model.Proposals.Count)</h3>
-
-            @if (!Model.Proposals.Any())
-            {
-                <div class="alert alert-light border shadow-sm">
-                    На цю вакансію ще ніхто не відгукнувся.
-                </div>
-            }
-            else
-            {
-                @foreach (var proposal in Model.Proposals)
-                {
-                    <div class="card mb-3 shadow-sm border-start border-primary border-4">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h5 class="fw-bold mb-0">
-                                    <a asp-controller="Freelancers" asp-action="Details" asp-route-id="@proposal.FreelancerId" class="text-decoration-none text-primary">
-                                        @proposal.Freelancer?.FreelancerNavigation?.Name
-                                    </a>
-                                </h5>
-
-                                <div class="d-flex align-items-center">
-                                    <span class="text-success fw-bold me-3">$@proposal.Price</span>
-
-                                    <form asp-controller="Interviews" asp-action="Create" method="post" class="d-inline">
-                                        <input type="hidden" name="vacancyId" value="@Model.Id" />
-                                        <input type="hidden" name="freelancerId" value="@proposal.FreelancerId" />
-                                        <a asp-controller="Interviews"
-                                           asp-action="Create"
-                                           asp-route-proposalId="@proposal.Id"
-                                           class="btn btn-outline-success btn-sm fw-bold">
-                                            Запросити
-                                        </a>
-                                    </form>
-                                </div>
-                            </div>
-                            <p class="text-muted mb-0">@proposal.Description</p>
-                        </div>
+    <div class="card border-0 shadow-sm mb-4" style="border-radius: 12px; border-left: 5px solid #0d6efd !important;">
+        <div class="card-body p-4">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h2 class="fw-bold mb-1">@Model.Title</h2>
+                    <div class="d-flex gap-3 align-items-center">
+                        <span class="badge @(Model.ClosedDate == null ? "bg-success" : "bg-secondary") rounded-pill">
+                            @(Model.ClosedDate == null ? "Активна" : "Закрита")
+                        </span>
+                        <span class="text-muted small"><i class="bi bi-calendar3"></i> @Model.CreatedDate.ToString("dd.MM.yyyy")</span>
+                        <a asp-controller="Clients" asp-action="Details" asp-route-id="@Model.ClientId" class="text-decoration-none small fw-bold">
+                            <i class="bi bi-person"></i> @(Model.Client?.CompanyName ?? "Замовник")
+                        </a>
                     </div>
-                }
-            }
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <h1 class="fw-bold text-dark mb-0">@Model.Price.ToString("N0") ₴</h1>
+                    <p class="text-muted small">Бюджет проєкту</p>
+                </div>
+            </div>
         </div>
     </div>
+
+    <ul class="nav nav-tabs border-0 mb-4 gap-2" id="vacancyTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active rounded-pill px-4 fw-bold shadow-sm" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab" aria-controls="description" aria-selected="true">
+                <i class="bi bi-info-circle me-1"></i> Опис вакансії
+            </button>
+        </li>
+        @if (isOwner)
+        {
+            <li class="nav-item" role="presentation">
+                <button class="nav-link rounded-pill px-4 fw-bold shadow-sm" id="proposals-tab" data-bs-toggle="tab" data-bs-target="#proposals" type="button" role="tab" aria-controls="proposals" aria-selected="false">
+                    <i class="bi bi-chat-left-text me-1"></i> Відгуки <span class="badge bg-primary ms-1">@Model.Proposals.Count</span>
+                </button>
+            </li>
+        }
+    </ul>
+
+    <div class="tab-content" id="vacancyTabContent">
+        <div class="tab-pane fade show active" id="description" role="tabpanel" aria-labelledby="description-tab">
+            <div class="card border-0 shadow-sm p-4" style="border-radius: 15px;">
+                <h5 class="fw-bold mb-3">Детальний опис завдання</h5>
+                <p style="white-space: pre-line; line-height: 1.7;" class="text-secondary">@Model.Description</p>
+
+                @if (!isOwner && Model.ClosedDate == null)
+                {
+                    <div class="alert alert-success d-inline-block px-5 rounded-pill shadow-sm">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        <strong>Успішно!</strong> Вашу пропозицію було надіслано.
+                    </div>
+                }
+            </div>
+        </div>
+
+        @if (isOwner)
+        {
+            <div class="tab-pane fade" id="proposals" role="tabpanel" aria-labelledby="proposals-tab">
+                @if (Model.Proposals == null || !Model.Proposals.Any())
+                {
+                    <div class="text-center py-5 bg-white shadow-sm rounded-3">
+                        <i class="bi bi-mailbox fs-1 text-muted"></i>
+                        <h5 class="text-muted mt-3">Ще немає жодного відгуку</h5>
+                    </div>
+                }
+                else
+                {
+                    <div class="row">
+                        @foreach (var proposal in Model.Proposals)
+                        {
+                            <div class="col-12 mb-3">
+                                <div class="card border-0 shadow-sm proposal-card" style="border-radius: 12px;">
+                                    <div class="card-body p-4">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h6 class="fw-bold text-primary mb-1">
+                                                    @(proposal.Freelancer?.FreelancerNavigation?.Name ?? "Фрілансер")
+                                                </h6>
+                                                <p class="mb-2">@proposal.Description</p>
+                                                <div class="mt-3 d-flex gap-2">
+                                                    
+                                                    <a asp-controller="Freelancers" asp-action="Details" asp-route-id="@proposal.FreelancerId"
+                                                       class="btn btn-sm btn-outline-secondary px-3 rounded-pill">
+                                                        <i class="bi bi-eye"></i> Переглянути профіль
+                                                    </a>
+
+                                                  
+                                                    @if (isOwner)
+                                                    {
+                                                        <a asp-controller="Interviews" asp-action="Create" asp-route-proposalId="@proposal.Id"
+                                                           class="btn btn-sm btn-primary px-4 rounded-pill shadow-sm">
+                                                            <i class="bi bi-calendar-plus me-1"></i> Запросити на інтерв'ю
+                                                        </a>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <div class="text-end">
+                                                <span class="h5 fw-bold text-success">@proposal.Price.ToString("N0") ₴</span>
+                                                <p class="text-muted small">Термін: @(proposal.Price / 100) днів</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
 </div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+           
+            $('#vacancyTab button').on('click', function (e) {
+                e.preventDefault();
+                $(this).tab('show');
+            });
+        });
+    </script>
+}
+
+<style>
+    body {
+        background-color: #f4f7f6;
+    }
+
+    .nav-tabs .nav-link {
+        border: none;
+        color: #6c757d;
+        background: white;
+        transition: all 0.3s;
+    }
+
+        .nav-tabs .nav-link.active {
+            background-color: #0d6efd !important;
+            color: white !important;
+        }
+
+    .proposal-card {
+        border-left: 4px solid transparent;
+        transition: all 0.2s;
+    }
+
+        .proposal-card:hover {
+            border-left-color: #0d6efd;
+            transform: translateX(5px);
+        }
+</style>

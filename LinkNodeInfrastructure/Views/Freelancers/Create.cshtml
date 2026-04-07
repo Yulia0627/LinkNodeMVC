@@ -1,51 +1,150 @@
 ﻿@model LinkNodeDomain.Model.Freelancer
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Реєстрація фрілансера";
 }
 
-<h1>Реєстрація фрілансера</h1>
 
-<h4>Фрілансер</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type = "hidden" asp-for ="Id" />
-            <div class="form-group">
-                <label asp-for="CategoryId" class="control-label"></label>
-                <select asp-for="CategoryId" class ="form-control" asp-items="ViewBag.CategoryId">
-                    <option value =" " selected dissabled>Оберіть категорію</option>
-                </select>
+
+<div class="container-fluid bg-light min-vh-100 py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6 col-xl-5">
+
+            <div class="d-flex justify-content-between align-items-center mb-4 px-3">
+                <h1 class="h3 fw-bold text-dark mb-0">Link<span class="text-navy">Node</span></h1>
+                <span class="badge bg-white text-muted border px-3 py-2 rounded-pill shadow-sm">
+                    Крок 2: Профіль спеціаліста
+                </span>
             </div>
-            <div class="form-group">
-                <label asp-for="HourlyRate" class="control-label"></label>
-                <input asp-for="HourlyRate" class="form-control" />
-                <span asp-validation-for="HourlyRate" class="text-danger"></span>
+
+            <div class="card card-registration">
+                <div class="card-body p-5">
+
+                   
+                    <div class="text-center mb-5">
+                        <div class="icon-box bg-navy-subtle d-inline-block p-4 rounded-circle mb-3">
+                            <i class="bi bi-person-badge-fill text-navy" style="font-size: 3rem;"></i>
+                        </div>
+                        <h2 class="fw-bold text-dark mt-2">Реєстрація фрілансера</h2>
+                        <p class="text-muted">Заповніть професійні дані, щоб почати роботу</p>
+                    </div>
+
+                    <form asp-action="Create">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-4 p-3 bg-danger-subtle rounded small text-center"></div>
+
+                     
+                        <input type="hidden" asp-for="Id" />
+
+                        
+                        <div class="mb-4">
+                            <label asp-for="CategoryId" class="form-label form-label-custom">Напрямок діяльності</label>
+                            <div class="input-group input-group-custom">
+                                <span class="input-group-text bg-white border-0 text-navy"><i class="bi bi-layers"></i></span>
+                                <select asp-for="CategoryId" class="form-select border-0 ps-1" asp-items="ViewBag.CategoryId">
+                                    <option value="" selected disabled>Оберіть категорію</option>
+                                </select>
+                            </div>
+                            <span asp-validation-for="CategoryId" class="text-danger small mt-1 d-block"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="HourlyRate" class="form-label form-label-custom">Погодинна ставка ($)</label>
+                            <div class="input-group input-group-custom">
+                                <span class="input-group-text bg-white border-0 text-navy"><i class="bi bi-cash-stack"></i></span>
+                                <input asp-for="HourlyRate" class="form-control border-0 ps-1" type="number" step="0.01" placeholder="0.00" min="0" />
+                            </div>
+                            <span asp-validation-for="HourlyRate" class="text-danger small mt-1 d-block"></span>
+                        </div>
+
+                      
+                        <div class="mb-4">
+                            <label asp-for="Description" class="form-label form-label-custom">Про себе / Досвід</label>
+                            <textarea asp-for="Description" class="form-control input-group-custom p-3" rows="4" placeholder="Ваші ключові компетенції..."></textarea>
+                            <span asp-validation-for="Description" class="text-danger small mt-1 d-block"></span>
+                        </div>
+
+                      
+                        <div class="mb-5">
+                            <label asp-for="EmpTypeId" class="form-label form-label-custom">Тип зайнятості</label>
+                            <div class="input-group input-group-custom">
+                                <span class="input-group-text bg-white border-0 text-navy"><i class="bi bi-clock"></i></span>
+                                <select asp-for="EmpTypeId" class="form-control border-0 ps-1" asp-items="ViewBag.EmpTypeId">
+                                    <option value="" selected disabled>Оберіть тип зайнятості</option>
+                                </select>
+                            </div>
+                            <span asp-validation-for="EmpTypeId" class="text-danger small mt-1 d-block"></span>
+                        </div>
+
+                      
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-navy btn-lg fw-bold rounded-pill py-3 text-uppercase">
+                                Завершити реєстрацію
+                            </button>
+                           
+                        </div>
+                    </form>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
-                <span asp-validation-for="Description" class="text-danger"></span>
+
+            <div class="text-center mt-5">
+                <p class="text-muted small">&copy; 2026 LinkNode. Професійна мережа для роботи.</p>
             </div>
-            <div class="form-group">
-                <label asp-for="EmpTypeId" class="control-label"></label>
-                <select asp-for="EmpTypeId" class ="form-control" asp-items="ViewBag.EmpTypeId">
-                    <option value=" " selected dissabled>Оберіть тип зайнятості</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+<style>
+    
+    .text-navy, .btn-navy {
+        color: #003366;
+    }
+
+    .bg-navy, .btn-navy {
+        background-color: #003366;
+        color: white;
+    }
+
+        .btn-navy:hover {
+            background-color: #002244;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 51, 102, 0.2);
+        }
+
+    .card-registration {
+        border-radius: 15px;
+        border: none;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+
+    .form-label-custom {
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        color: #6c757d;
+    }
+
+    .input-group-custom {
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid #dee2e6;
+        transition: all 0.3s ease;
+    }
+
+        .input-group-custom:focus-within {
+            border-color: #003366;
+            box-shadow: 0 0 0 0.25rem rgba(0, 51, 102, 0.1);
+        }
+
+    .bg-navy-subtle {
+        background-color: #f0f4f8;
+    }
+</style>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

@@ -12,14 +12,15 @@
                     <h4 class="mb-0 text-center"><i class="bi bi-calendar-event me-2"></i>Запрошення на інтерв'ю</h4>
                 </div>
                 <div class="card-body p-4">
-                    <form asp-action="Create">
+                    <form asp-action="Create" id="interviewForm">
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert"></div>
                         <input type="hidden" asp-for="PropId" />
 
                         <div class="mb-3">
-                            <label asp-for="DateTime" class="form-label fw-bold" type="datetime-local" value="@Model?.DateTime.ToString("yyyy-MM-ddTHH:mm")">Дата та час зустрічі</label>
+                            <label asp-for="DateTime" class="form-label fw-bold">Дата та час зустрічі</label>
                             <div class="input-group">
-                                <input asp-for="DateTime" class="form-control shadow-none" type="datetime-local" />
+                              
+                                <input asp-for="DateTime" id="interviewDate" class="form-control shadow-none" type="datetime-local" />
                             </div>
                             <span asp-validation-for="DateTime" class="text-danger small"></span>
                         </div>
@@ -40,7 +41,6 @@
                             <button type="submit" class="btn btn-primary btn-lg shadow-sm">
                                 <i class="bi bi-check-circle me-1"></i> Створити запрошення
                             </button>
-                            <a asp-action="Index" class="btn btn-link text-muted mt-2">Повернутися до списку</a>
                         </div>
                     </form>
                 </div>
@@ -50,29 +50,63 @@
 </div>
 
 <style>
-    /* Додатковий легкий тюнінг */
     body {
         background-color: #f8f9fa;
     }
+
     .card {
         border-radius: 12px;
         overflow: hidden;
     }
+
     .form-control:focus {
         border-color: #0d6efd;
-        box-shadow: 0 0 0 0.25 red border-color: rgba(13, 110, 253, 0.1);
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
     }
+
     .btn-primary {
         border-radius: 8px;
         transition: transform 0.1s ease;
     }
-    .btn-primary:active {
-        transform: scale(0.98);
-    }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
 </style>
 
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+        $(document).ready(function () {
+          
+            $.validator.addMethod("futureDate", function (value, element) {
+                if (!value) return true; 
+
+                var selectedDate = new Date(value);
+                var now = new Date();
+
+                return selectedDate > now; 
+            }, "Дата інтерв'ю не може бути у минулому");
+
+            
+            $("#interviewDate").rules("add", {
+                futureDate: true
+            });
+
+            
+            const now = new Date();
+            
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+
+            const minDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+            $('#interviewDate').attr('min', minDateTime);
+        });
+    </script>
 }

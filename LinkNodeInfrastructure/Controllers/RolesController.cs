@@ -14,8 +14,8 @@ namespace LinkNodeInfrastructure.Controllers
     [Authorize(Roles = "admin")] 
     public class RolesController : Controller
     {
-        private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly UserManager<User> _userManager;
+        private RoleManager<IdentityRole> _roleManager;
+        private UserManager<User> _userManager;
 
         public RolesController(RoleManager<IdentityRole> roleManager, UserManager<User> userManager)
         {

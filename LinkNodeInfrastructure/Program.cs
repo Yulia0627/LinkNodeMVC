@@ -22,6 +22,10 @@ builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
 .AddEntityFrameworkStores<DbLinkNodeContext>()
 .AddDefaultTokenProviders();
 
+builder.Services.AddScoped<LinkNodeInfrastructure.Services.IDataPortServiceFactory<Category>, LinkNodeInfrastructure.Services.CategoryDataPortServiceFactory>();
+builder.Services.AddScoped<LinkNodeInfrastructure.Services.IImportService<Category>, LinkNodeInfrastructure.Services.CategoryImportService>();
+builder.Services.AddScoped<LinkNodeInfrastructure.Services.IExportService<Category>, LinkNodeInfrastructure.Services.CategoryExportService>();
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -30,7 +34,6 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var userManager = services.GetRequiredService<UserManager<User>>();
-        // ВАЖЛИВО: додано <IdentityRole<int>>, щоб збігалося з AddIdentity
         var rolesManager = services.GetRequiredService<RoleManager<IdentityRole<int>>>();
 
         await RoleInitializer.InitializeAsync(userManager, rolesManager);
@@ -39,7 +42,6 @@ using (var scope = app.Services.CreateScope())
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
         logger.LogError(ex, "Сталася помилка під час наповнення БД: " + ex.Message);
-        // Додай цей рядок, щоб побачити помилку прямо в консолі при запуску
         Console.WriteLine("ПОМИЛКА ІНІЦІАЛІЗАЦІЇ: " + ex.Message);
     }
 }

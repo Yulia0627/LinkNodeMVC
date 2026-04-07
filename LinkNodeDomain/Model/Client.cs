@@ -7,6 +7,7 @@ namespace LinkNodeDomain.Model;
 public partial class Client : Entity
 {
     [Display(Name = "Назва компанії")]
+    [Required(ErrorMessage = "Поле не повинно бути порожнім.")]
     public string? CompanyName { get; set; }
  
     [Display(Name = "Відсоток найму")]

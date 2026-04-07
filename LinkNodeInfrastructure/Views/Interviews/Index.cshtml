@@ -5,18 +5,35 @@
 }
 
 <div class="container mt-5">
+    <div class="d-flex justify-content-center mb-4">
+        @await Html.PartialAsync("_NavigationTabs")
+    </div>
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="fw-bold text-dark">Календар інтерв'ю</h1>
     </div>
 
     <div class="row">
+        
         @foreach (var item in Model)
         {
             <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card h-100 shadow-sm border-0 position-relative" style="border-radius: 15px;">
+                <div class="card h-100 shadow-sm border-0 position-relative transition-hover" style="border-radius: 15px;">
+
+                   
                     <div class="position-absolute top-0 end-0 m-3">
-                        <span class="badge rounded-pill @(item.IntroStatusId == 1 ? "bg-primary" : "bg-success") px-3">
-                            @Html.DisplayFor(modelItem => item.IntroStatus.Status)
+                        @{
+                            var statusClass = item.IntroStatusId switch
+                            {
+                                1 => "bg-primary",   
+                                2 => "bg-success",   
+                                5 => "bg-danger",    
+                                4 => "bg-warning text-dark", 
+                                _ => "bg-secondary"
+                            };
+                        }
+                        <span class="badge rounded-pill @statusClass px-3">
+                            @item.IntroStatus?.Status
                         </span>
                     </div>
 
@@ -26,7 +43,7 @@
                         </div>
 
                         <h5 class="card-title fw-bold mb-3">
-                            @Html.DisplayFor(modelItem => item.InterviewRound) раунд
+                            @item.InterviewRound раунд
                         </h5>
 
                         <div class="d-flex align-items-center mb-2">
@@ -42,19 +59,30 @@
                         <hr class="my-3 opacity-25">
 
                         <p class="card-text small text-secondary">
-                            <strong>Пропозиція:</strong> @Html.DisplayFor(modelItem => item.Prop.Description)
+                            <strong>Пропозиція:</strong> @item.Prop?.Description
                         </p>
 
+                       
                         @if (item.IntroStatusId != 5)
                         {
-                            <a href="@item.Reference" class="btn btn-outline-primary w-100">
-                                Приєднатися до зустрічі
+                            <a href="@item.Reference" class="btn btn-outline-primary w-100 mb-2">
+                                <i class="bi bi-camera-video me-2"></i>Приєднатися до зустрічі
                             </a>
+
+                            
+                            @if ((item.IntroStatusId == 1 || item.IntroStatusId == 4) && User.IsInRole("freelancer"))
+                            {
+                                <form asp-action="Confirm" asp-route-id="@item.Id" method="post">
+                                    <button type="submit" class="btn btn-success w-100">
+                                        <i class="bi bi-check-lg me-2"></i>Підтвердити участь
+                                    </button>
+                                </form>
+                            }
                         }
                         else
                         {
                             <button class="btn btn-outline-secondary w-100" disabled>
-                                Зустріч скасована
+                                <i class="bi bi-x-circle me-2"></i>Зустріч скасована
                             </button>
                         }
                     </div>
@@ -66,9 +94,15 @@
                         <a asp-action="Details" asp-route-id="@item.Id" class="text-decoration-none text-info small mx-3">
                             <i class="bi bi-eye"></i> Деталі
                         </a>
-                        <a asp-action="Delete" asp-route-id="@item.Id" class="text-decoration-none text-danger small">
-                            <i class="bi bi-trash"></i> Скасувати
-                        </a>
+
+                        @if (item.IntroStatusId != 5)
+                        {
+                            <form asp-action="Delete" asp-route-id="@item.Id" method="post" onsubmit="return confirm('Ви впевнені, що хочете скасувати це інтерв\'ю?')">
+                                <button type="submit" class="btn btn-link text-decoration-none text-danger small p-0 m-0">
+                                    <i class="bi bi-trash"></i> Скасувати
+                                </button>
+                            </form>
+                        }
                     </div>
                 </div>
             </div>
@@ -77,21 +111,44 @@
 </div>
 
 <style>
-    body {
-        background-color: #f4f7f6;
+    
+    .transition-hover {
+        transition: all 0.3s ease;
+        background-color: #ffffff !important;
     }
 
-    .card {
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-        .card:hover {
+        
+        .transition-hover:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.12) !important;
+            
+            background-color: #ffffff !important;
         }
 
-    .badge {
-        font-weight: 500;
-        letter-spacing: 0.5px;
-    }
+            
+            .transition-hover:hover .card-title,
+            .transition-hover:hover h5 {
+                color: #212529 !important; 
+            }
+
+            .transition-hover:hover .card-text,
+            .transition-hover:hover .text-secondary,
+            .transition-hover:hover strong {
+                color: #6c757d !important; 
+            }
+
+            .transition-hover:hover .text-muted,
+            .transition-hover:hover .small {
+                color: #6c757d !important; 
+            }
+
+           
+            .transition-hover:hover .fw-bold {
+                color: #212529 !important;
+            }
+
+           
+            .transition-hover:hover .bi-calendar-event {
+                color: #0d6efd !important;
+            }
 </style>

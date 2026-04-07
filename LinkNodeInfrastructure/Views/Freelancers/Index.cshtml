@@ -1,12 +1,25 @@
 ﻿@model IEnumerable<LinkNodeDomain.Model.Freelancer>
 
 @{
-    ViewData["Title"] = "Реєстрація фрілансера";
+    ViewData["Title"] = "Пошук фрілансерів";
 }
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="display-5 fw-bold text-primary">Фрілансери</h1>
+
+        <ul class="nav nav-tabs border-0">
+            <li class="nav-item">
+                <a class="nav-link active fw-bold border-bottom border-3 border-primary" asp-controller="Freelancers" asp-action="Index">
+                    <i class="bi bi-people me-2"></i>Фрілансери
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-muted" asp-controller="Vacancies" asp-action="Index">
+                    <i class="bi bi-briefcase me-2"></i>Вакансії
+                </a>
+            </li>
+        </ul>
     </div>
 
     <div class="card shadow-sm mb-5 bg-light border-0">
@@ -25,7 +38,7 @@
                 </div>
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">Макс. ціна ($/год)</label>
-                    <input type="number" name="maxRate" value="@ViewData["CurrentMaxRate"]" class="form-control" placeholder="До..." />
+                    <input type="number" name="maxRate" min="0" value="@ViewData["CurrentMaxRate"]" class="form-control" placeholder="До..." />
                 </div>
                 <div class="col-12 text-end mt-3">
                     <a asp-action="Index" class="btn btn-link text-decoration-none text-secondary">Очистити</a>
@@ -78,16 +91,12 @@
                                 <small class="text-muted">/год</small>
                             </div>
                             <div class="btn-group shadow-sm">
+                                <div class="btn-group shadow-sm">
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary px-3">Переглянути профіль</a>
                                 <a asp-controller="Invites" asp-action="Create" asp-route-freelancerId="@item.Id"
                                    class="btn btn-sm btn-primary px-3">Запросити</a>
-                                <button type="button" class="btn btn-sm btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <span class="visually-hidden">Меню</span>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" asp-action="Edit" asp-route-id="@item.Id">🔧 Редагувати</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item text-danger" asp-action="Delete" asp-route-id="@item.Id">🗑️ Видалити</a></li>
-                                </ul>
+                                   </div>
+                                
                             </div>
                         </div>
                     </div>
@@ -106,4 +115,19 @@
             transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(0,0,0,0.12) !important;
         }
+
+    .nav-tabs {
+        border-bottom: 2px solid #dee2e6;
+    }
+
+        .nav-tabs .nav-link {
+            border: none;
+            color: #6c757d;
+            padding: 10px 20px;
+        }
+
+            .nav-tabs .nav-link.active {
+                color: #0d6efd !important;
+                background: none;
+            }
 </style>

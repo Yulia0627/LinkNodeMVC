@@ -11,7 +11,6 @@ public partial class AdminAction : Entity
 {
     public int AdminId { get; set; }
 
-    // Навігаційна властивість для зв'язку з сутністю User
     [ForeignKey("AdminId")]
     public virtual User Admin { get; set; } = null!;
     public int ActionId { get; set; }

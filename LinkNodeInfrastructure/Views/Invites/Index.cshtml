@@ -1,19 +1,21 @@
 ﻿@model IEnumerable<LinkNodeDomain.Model.Invite>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Список запрошень";
 }
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="fw-bold text-dark">Список запрошень</h1>
+        <h1 class="fw-bold text-dark">📩 Список запрошень</h1>
+        <span class="badge bg-primary rounded-pill">Всього: @Model.Count()</span>
     </div>
 
     @if (!Model.Any())
     {
-        <div class="text-center py-5 bg-white rounded-3 shadow-sm">
+        <div class="card border-0 shadow-sm p-5 text-center bg-white rounded-3">
             <i class="bi bi-envelope-x text-muted" style="font-size: 3rem;"></i>
             <h4 class="text-muted mt-3">Запрошень поки немає</h4>
+            <p class="text-muted">Активно відгукуйтесь на вакансії, щоб вас помітили!</p>
         </div>
     }
     else
@@ -22,49 +24,87 @@
             @foreach (var item in Model)
             {
                 <div class="col-12 mb-3">
-                    <div class="card border-0 shadow-sm invite-card">
-                        <div class="card-body p-4">
-                            <div class="row align-items-center">
-                                <div class="col-md-5">
-                                    <h5 class="fw-bold mb-1 text-primary">@item.Vacancy?.Title</h5>
-                                    <p class="text-muted small mb-0 text-truncate-1">
-                                        <i class="bi bi-file-text me-1"></i> @item.Vacancy?.Description
-                                    </p>
-                                </div>
+                    <div class="card border-0 shadow-sm invite-card overflow-hidden transition-hover">
+                        <div class="row g-0">
+                            
+                            <div class="col-md-1 bg-primary d-none d-md-flex align-items-center justify-content-center text-white">
+                                <i class="bi bi-send-fill fs-3"></i>
+                            </div>
 
-                                <div class="col-md-3 border-start-md">
-                                    <div class="d-flex align-items-center">
-                                        <div class="avatar-sm me-2 bg-light text-secondary d-flex align-items-center justify-content-center rounded-circle" style="width: 35px; height: 35px;">
-                                            <i class="bi bi-person"></i>
+                            <div class="col-md-11">
+                                <div class="card-body p-4">
+                                    <div class="row align-items-center">
+                                       
+                                        <div class="col-md-5">
+                                            <h5 class="fw-bold mb-1 text-primary">@item.Vacancy?.Title</h5>
+                                            <p class="text-muted fw-semibold mb-1 small">
+                                                <i class="bi bi-building"></i> @item.Vacancy?.Client?.ClientNavigation?.UserName
+                                            </p>
+                                            <p class="text-muted small mb-0 text-truncate">
+                                                @item.Vacancy?.Description
+                                            </p>
                                         </div>
-                                        <div>
-                                            <p class="mb-0 small text-muted">Фрілансер ID</p>
-                                            <p class="mb-0 fw-bold">#@item.Freelancer?.Id</p>
+
+                                        
+                                        @if (User.IsInRole("client"))
+                                        {
+                                            <div class="col-md-3 border-start">
+                                                <div class="d-flex flex-column justify-content-center h-100 ps-md-3">
+                                                    <a asp-controller="Freelancers" asp-action="Details" asp-route-id="@item.FreelancerId"
+                                                    class="btn btn-sm btn-outline-secondary px-3 rounded-pill w-auto">
+                                                        <i class="bi bi-person-badge"></i> Переглянути фрілансера
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        }
+
+                                        
+                                        <div class="col-md-2 text-center">
+                                            @{
+                                                var statusName = item.Status?.InviteStatus1;
+                                                var statusClass = statusName == "Прийнято" || statusName == "Підтверджено" ? "bg-success" :
+                                                statusName == "Відхилено" ? "bg-danger" :
+                                                "bg-warning text-dark";
+
+                                                var statusIcon = statusName == "Прийнято" || statusName == "Підтверджено" ? "bi-check-circle-fill" :
+                                                statusName == "Відхилено" ? "bi-x-circle-fill" :
+                                                "bi-clock-fill";
+                                            }
+                                            <span class="badge rounded-pill @statusClass px-3 py-2 shadow-sm">
+                                                <i class="bi @statusIcon me-1"></i> @(statusName ?? "Очікується")
+                                            </span>
                                         </div>
-                                    </div>
-                                </div>
 
-                                <div class="col-md-2 text-center">
-                                    @{
-                                        var statusClass = item.Status?.InviteStatus1 == "Прийнято" ? "bg-success" :
-                                        item.Status?.InviteStatus1 == "Відхилено" ? "bg-danger" : "bg-warning text-dark";
-                                    }
-                                    <span class="badge rounded-pill @statusClass px-3 py-2">
-                                        @item.Status?.InviteStatus1
-                                    </span>
-                                </div>
+                                        
+                                        <div class="col-md-2">
+                                            <div class="d-flex flex-column gap-2">
+                                                
+                                                @if (item.StatusId == 3 && User.IsInRole("freelancer"))
+                                                {
+                                                    
+                                                    <a asp-controller="Proposals" asp-action="Create" asp-route-vacancyId="@item.VacancyId"
+                                                       class="btn btn-success btn-sm px-3 rounded-pill fw-bold shadow-sm">
+                                                        <i class="bi bi-file-earmark-plus me-1"></i> Податися
+                                                    </a>
 
-                                <div class="col-md-2 text-end">
-                                    <div class="dropdown">
-                                        <button class="btn btn-light btn-sm border" type="button" data-bs-toggle="dropdown">
-                                            <i class="bi bi-three-dots-vertical"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end shadow border-0">
-                                            <li><a class="dropdown-item py-2" asp-action="Details" asp-route-id="@item.Id"><i class="bi bi-info-circle me-2"></i>Деталі</a></li>
-                                            <li><a class="dropdown-item py-2" asp-action="Edit" asp-route-id="@item.Id"><i class="bi bi-pencil me-2"></i>Редагувати</a></li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li><a class="dropdown-item py-2 text-danger" asp-action="Delete" asp-route-id="@item.Id"><i class="bi bi-trash me-2"></i>Видалити</a></li>
-                                        </ul>
+                                                    
+                                                    <form asp-action="Reject" asp-route-id="@item.Id" method="post"
+                                                          onsubmit="return confirm('Ви впевнені, що хочете відхилити це запрошення?');">
+                                                        <button type="submit" class="btn btn-outline-danger btn-sm px-3 rounded-pill w-100 fw-bold">
+                                                            <i class="bi bi-x-circle me-1"></i> Відхилити
+                                                        </button>
+                                                    </form>
+                                                }
+                                                else
+                                                {
+                                                    
+                                                    <a asp-controller="Vacancies" asp-action="Details" asp-route-id="@item.VacancyId"
+                                                       class="btn btn-primary btn-sm px-3 rounded-pill fw-bold shadow-sm">
+                                                        Деталі вакансії
+                                                    </a>
+                                                }
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -77,37 +117,19 @@
 </div>
 
 <style>
-    body {
-        background-color: #f8f9fa;
+    .transition-hover {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
-    .invite-card {
-        border-radius: 12px;
-        transition: transform 0.2s;
-        border-left: 4px solid #34495e !important; 
-    }
-
-        .invite-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+        .transition-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1) !important;
         }
 
-    .text-truncate-1 {
+    .text-truncate {
         display: -webkit-box;
-        -webkit-line-clamp: 1;
+        -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
-    }
-
-    @@media (min-width: 768px) {
-        .border-start-md {
-            border-left: 1px solid #dee2e6 !important;
-            padding-left: 1.5rem;
-        }
-    }
-
-    .badge {
-        font-weight: 600;
-        letter-spacing: 0.3px;
     }
 </style>

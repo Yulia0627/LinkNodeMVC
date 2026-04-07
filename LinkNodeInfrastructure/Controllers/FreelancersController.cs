@@ -1,12 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using LinkNodeDomain.Model;
+using LinkNodeInfrastructure;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using LinkNodeDomain.Model;
-using LinkNodeInfrastructure;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace LinkNodeInfrastructure.Controllers
 {
@@ -20,20 +22,22 @@ namespace LinkNodeInfrastructure.Controllers
         }
 
         // GET: Freelancers
-        public async Task<IActionResult> Index(string search, int? categoryId, decimal? maxRate)
+        public async Task<IActionResult> Index(string searchName, int? categoryId, decimal? maxRate)
         {
+            ViewData["CurrentName"] = searchName;
+            ViewData["CurrentMaxRate"] = maxRate;
             ViewBag.CategoryId = new SelectList(_context.Categories, "Id", "Category1", categoryId);
             var query = _context.Freelancers
                 .Include(f => f.Category)
                 .Include(f => f.EmpType)
                 .Include(f => f.FreelancerNavigation)
                 .AsQueryable();
-            if(!string.IsNullOrEmpty(search))
+            if(!string.IsNullOrEmpty(searchName))
             {
                 query = query.Where(f =>
-                f.FreelancerNavigation.Name.ToLower().Contains(search.ToLower()) ||
-                f.FreelancerNavigation.Surname.ToLower().Contains(search.ToLower()) ||
-                (f.FreelancerNavigation.Name.ToLower() + ' ' + f.FreelancerNavigation.Surname.ToLower()).Contains(search.ToLower()));
+                f.FreelancerNavigation.Name.ToLower().Contains(searchName.ToLower()) ||
+                f.FreelancerNavigation.Surname.ToLower().Contains(searchName.ToLower()) ||
+                (f.FreelancerNavigation.Name.ToLower() + ' ' + f.FreelancerNavigation.Surname.ToLower()).Contains(searchName.ToLower()));
             }
             if (categoryId.HasValue)
             {
@@ -68,15 +72,18 @@ namespace LinkNodeInfrastructure.Controllers
         }
 
         // GET: Freelancers/Create
-        public IActionResult Create(int id)
+        public IActionResult Create(int id) 
         {
             var freelancer = new Freelancer
             {
+               
                 Id = id
             };
+
             ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Category1");
             ViewData["EmpTypeId"] = new SelectList(_context.EmploymentTypes, "Id", "EmpType");
-            //ViewData["Id"] = new SelectList(_context.Users, "Id", "Country");
+
+            
             return View(freelancer);
         }
 
@@ -87,50 +94,64 @@ namespace LinkNodeInfrastructure.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("CategoryId,HourlyRate,Description,EmpTypeId,Id")] Freelancer freelancer)
         {
+            
             ModelState.Remove("Category");
             ModelState.Remove("EmpType");
             ModelState.Remove("FreelancerNavigation");
+
             if (ModelState.IsValid)
             {
-                _context.Add(freelancer);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                
+                var freelancerExists = await _context.Freelancers.AnyAsync(f => f.Id == freelancer.Id);
+
+                if (freelancerExists)
+                {
+                    ModelState.AddModelError("", "Профіль фрілансера для цього користувача вже створено.");
+                }
+                else
+                {
+                
+                    _context.Add(freelancer);
+                    await _context.SaveChangesAsync();
+                }
             }
+
             ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Category1", freelancer.CategoryId);
             ViewData["EmpTypeId"] = new SelectList(_context.EmploymentTypes, "Id", "EmpType", freelancer.EmpTypeId);
-            ViewData["Id"] = new SelectList(_context.Users, "Id", "Country", freelancer.Id);
             return View(freelancer);
         }
 
         // GET: Freelancers/Edit/5
+        [Authorize]
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
+            if (id == null) return NotFound();
+
+           
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (id.ToString() != currentUserId)
             {
-                return NotFound();
+                return Forbid();
             }
 
             var freelancer = await _context.Freelancers.FindAsync(id);
-            if (freelancer == null)
-            {
-                return NotFound();
-            }
+            if (freelancer == null) return NotFound();
+
             ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Category1", freelancer.CategoryId);
             ViewData["EmpTypeId"] = new SelectList(_context.EmploymentTypes, "Id", "EmpType", freelancer.EmpTypeId);
-            ViewData["Id"] = new SelectList(_context.Users, "Id", "Country", freelancer.Id);
             return View(freelancer);
         }
 
-        // POST: Freelancers/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> Edit(int id, [Bind("CategoryId,HourlyRate,Description,EmpTypeId,Id")] Freelancer freelancer)
         {
-            if (id != freelancer.Id)
+           
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (id != freelancer.Id || id.ToString() != currentUserId)
             {
-                return NotFound();
+                return Forbid();
             }
 
             if (ModelState.IsValid)
@@ -139,24 +160,19 @@ namespace LinkNodeInfrastructure.Controllers
                 {
                     _context.Update(freelancer);
                     await _context.SaveChangesAsync();
+                   
+                    return RedirectToAction(nameof(Details), new { id = freelancer.Id });
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!FreelancerExists(freelancer.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    if (!FreelancerExists(freelancer.Id)) return NotFound();
+                    else throw;
                 }
-                return RedirectToAction(nameof(Index));
             }
+
             ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Category1", freelancer.CategoryId);
             ViewData["EmpTypeId"] = new SelectList(_context.EmploymentTypes, "Id", "EmpType", freelancer.EmpTypeId);
-            ViewData["Id"] = new SelectList(_context.Users, "Id", "Country", freelancer.Id);
-            return View(freelancer);
+            return RedirectToAction("Details", "Freelancers");
         }
 
         // GET: Freelancers/Delete/5

@@ -42,9 +42,8 @@ namespace LinkNodeInfrastructure.Controllers
 
                 if (result.Succeeded)
                 {
-                    
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-                    return RedirectToAction("Index", "Home");
+
+                    return RedirectToAction("ChooseRole", "Account", new { userId = user.Id });
                 }
 
                 foreach (var error in result.Errors)
@@ -62,28 +61,36 @@ namespace LinkNodeInfrastructure.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+
+        
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (ModelState.IsValid)
             {
-                var result =
-                    await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false);
+                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false);
+
                 if (result.Succeeded)
                 {
-                    // перевіряємо, чи належить URL додатку
-                    if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
-                    {
-                        return Redirect(model.ReturnUrl);
-                    }
-                    else
-                    {
-                        return RedirectToAction("Index", "Home");
-                    }
+                    var user = await _userManager.FindByEmailAsync(model.Email);
+                    if (user == null) return View(model);
+
+                    var roles = await _userManager.GetRolesAsync(user);
+
+                    
+                    var upperRoles = roles.Select(r => r.ToUpper()).ToList();
+
+                    if (upperRoles.Contains("FREELANCER"))
+                        return RedirectToAction("Index", "Vacancies");
+
+                    if (upperRoles.Contains("CLIENT"))
+                        return RedirectToAction("Index", "Freelancers");
+
+                    if (upperRoles.Contains("ADMIN"))
+                        return RedirectToAction("Index", "Admin");
+
+                    return RedirectToAction("Index", "Home");
                 }
-                else
-                {
-                    ModelState.AddModelError("", "Неправильний логін чи (та) пароль");
-                }
+                ModelState.AddModelError(string.Empty, "Невірний логін або пароль.");
             }
             return View(model);
         }
@@ -92,9 +99,39 @@ namespace LinkNodeInfrastructure.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
-            // видаляємо автентифікаційні куки
+            
             await _signInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
+        }
+
+        [HttpGet]
+        public IActionResult ChooseRole(int userId) 
+        {
+            ViewBag.UserId = userId;
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SetRole(int userId, string roleName) 
+        {
+            
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null) return NotFound();
+
+            roleName = roleName.ToUpper();
+
+            if (!await _userManager.IsInRoleAsync(user, roleName))
+            {
+                var result = await _userManager.AddToRoleAsync(user, roleName);
+                if (!result.Succeeded) return BadRequest("Не вдалося додати роль.");
+            }
+
+            await _signInManager.SignInAsync(user, isPersistent: false);
+
+            return roleName == "FREELANCER"
+                ? RedirectToAction("Create", "Freelancers", new { id = user.Id })
+                : RedirectToAction("Create", "Clients", new { id = user.Id });
         }
 
     }

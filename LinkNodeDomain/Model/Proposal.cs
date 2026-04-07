@@ -6,10 +6,8 @@ namespace LinkNodeDomain.Model;
 
 public partial class Proposal : Entity
 {
-   // [Display(Name = "Вакансія")]
     public int VacancyId { get; set; }
 
-    //[Display(Name = "Фрілансер")]
     public int FreelancerId { get; set; }
 
     [Required(ErrorMessage = "Поле не повинно бути порожнім.")]

@@ -1,22 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using LinkNodeDomain.Model;
+using LinkNodeInfrastructure;
+using LinkNodeInfrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using LinkNodeDomain.Model;
-using LinkNodeInfrastructure;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace LinkNodeInfrastructure.Controllers
 {
     public class ClientsController : Controller
     {
         private readonly DbLinkNodeContext _context;
+        private readonly IDataPortServiceFactory<Category> _categoryDataPortServiceFactory;
 
-        public ClientsController(DbLinkNodeContext context)
+        public ClientsController(DbLinkNodeContext context, IDataPortServiceFactory<Category> factory)
         {
             _context = context;
+            _categoryDataPortServiceFactory = factory;
         }
 
         // GET: Clients
@@ -72,7 +76,7 @@ namespace LinkNodeInfrastructure.Controllers
                 client.AvgHourlyRatePaid = 0;
                 _context.Add(client);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index", "Freelancers");
             }
             ViewData["Id"] = new SelectList(_context.Users, "Id", "Country", client.Id);
             return View(client);
@@ -168,6 +172,61 @@ namespace LinkNodeInfrastructure.Controllers
         private bool ClientExists(int id)
         {
             return _context.Clients.Any(e => e.Id == id);
+        }
+
+        [HttpGet]
+        public IActionResult Import()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Import(IFormFile fileExcel, CancellationToken cancellationToken = default)
+        {
+            if (fileExcel == null || fileExcel.Length == 0)
+            {
+                ModelState.AddModelError("", "Будь ласка, оберіть файл для завантаження.");
+                return View();
+            }
+
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int clientId))
+            {
+                return Challenge(); 
+            }
+
+           
+            var importService = _categoryDataPortServiceFactory.GetImportService(fileExcel.ContentType);
+
+            
+            using (var stream = fileExcel.OpenReadStream())
+            {
+                
+                await importService.ImportFromStreamAsync(stream, clientId, cancellationToken);
+            }
+
+            return RedirectToAction("Index", "Vacancies");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Export(CancellationToken cancellationToken)
+        {
+            
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            int clientId = int.Parse(userId);
+
+            var exportService = _categoryDataPortServiceFactory.GetExportService("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+            using var stream = new MemoryStream();
+            await exportService.WriteToAsync(stream, clientId, cancellationToken);
+
+            var content = stream.ToArray();
+            return File(
+                content,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                $"MyVacancies_{DateTime.Now:ddMMyyyy}.xlsx"
+            );
         }
     }
 }

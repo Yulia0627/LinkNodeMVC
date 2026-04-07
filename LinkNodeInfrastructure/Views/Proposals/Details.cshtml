@@ -1,48 +1,126 @@
 ﻿@model LinkNodeDomain.Model.Proposal
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Деталі пропозиції";
 }
 
-<h1>Details</h1>
+<div class="container mt-5">
+   
+    <div class="d-flex justify-content-center mb-4">
+        @await Html.PartialAsync("_NavigationTabs")
+    </div>
 
-<div>
-    <h4>Proposal</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Price)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Price)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Description)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CreatedDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CreatedDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Freelancer)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Freelancer.Id)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Vacancy)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Vacancy.Description)
-        </dd>
-    </dl>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+
+          
+            <div class="mb-3">
+                <a asp-action="Index" class="text-decoration-none text-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Повернутися до моїх пропозицій
+                </a>
+            </div>
+
+            <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 20px;">
+
+               
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="badge bg-primary-subtle text-primary rounded-pill px-3 mb-2">Ваш відгук на вакансію</span>
+                            <h2 class="fw-bold text-dark mb-1">
+                                
+                                <a asp-controller="Vacancies" asp-action="Details" asp-route-id="@Model.VacancyId" class="text-decoration-none text-dark hover-link">
+                                    @Model.Vacancy?.Title
+                                </a>
+                            </h2>
+                            <p class="text-muted small">
+                                <i class="bi bi-calendar3 me-1"></i> Створено: @Model.CreatedDate.ToString("dd MMMM yyyy")
+                            </p>
+                        </div>
+                        <div class="text-end">
+                            <h3 class="fw-bold text-success mb-0">@Model.Price.ToString("C0")</h3>
+                            <span class="text-muted small">Ваша цінова пропозиція</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <hr class="text-light mt-0 mb-4" />
+
+                   
+                    <div class="mb-4">
+                        <h5 class="fw-bold mb-3"><i class="bi bi-chat-left-text me-2"></i> Супровідний лист </h5>
+                        <div class="p-3 bg-light rounded-3 text-secondary" style="white-space: pre-line; line-height: 1.6; border-left: 4px solid #0d6efd;">
+                            @Model.Description
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div class="card-footer bg-light border-0 p-4 text-center text-sm-start">
+                    <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-sm-start">
+
+                        @if (User.IsInRole("Freelancer"))
+                        {
+                            <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-primary px-5 rounded-pill shadow-sm">
+                                <i class="bi bi-pencil me-2"></i> Редагувати відгук
+                            </a>
+                            <a asp-action="Delete" asp-route-id="@Model?.Id" class="btn btn-outline-danger px-4 rounded-pill">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        }
+
+                        @if (User.IsInRole("Client"))
+                        {
+                            <a asp-controller="Interviews" asp-action="Create" asp-route-proposalId="@Model.Id" class="btn btn-success px-5 rounded-pill shadow-sm">
+                                <i class="bi bi-calendar-check me-2"></i> Запланувати інтерв'ю
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
-</div>
+
+<style>
+    body {
+        background-color: #f4f7f6;
+    }
+
+    .bg-blue-soft {
+        background-color: #eef4ff;
+    }
+
+    .hover-link:hover {
+        color: #0d6efd !important;
+        text-decoration: underline !important;
+    }
+
+    .card {
+        border-radius: 20px;
+    }
+
+    .btn-primary {
+        background-color: #0d6efd;
+        border: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+        .btn-primary:hover {
+            background-color: #0b5ed7;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(13, 110, 253, 0.2) !important;
+        }
+
+    .btn-success {
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(25, 135, 84, 0.2) !important;
+        }
+</style>

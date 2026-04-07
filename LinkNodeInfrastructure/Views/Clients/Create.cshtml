@@ -1,33 +1,108 @@
 ﻿@model LinkNodeDomain.Model.Client
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Реєстрація клієнта";
 }
 
-<h1>Реєстрація клієнта</h1>
 
-<h4>Клієнт</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="CompanyName" class="control-label"></label>
-                <input asp-for="CompanyName" class="form-control" />
-                <span asp-validation-for="CompanyName" class="text-danger"></span>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+
+            <div class="text-center mb-4">
+                <h1 class="fw-bold text-dark">Link<span class="text-primary">Node</span></h1>
+                <p class="text-muted">Крок 2: Налаштування кабінету клієнта</p>
             </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+
+            <div class="card card-registration">
+                <div class="card-body p-5">
+
+                    <div class="text-center mb-4">
+                        <i class="bi bi-building-check text-navy" style="font-size: 3rem;"></i>
+                        <h2 class="h4 fw-bold mt-3">Ваш профіль</h2>
+                    </div>
+
+                    <form asp-action="Create">
+                        <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                        
+                        <input type="hidden" asp-for="Id" />
+
+                        <div class="mb-4">
+                            <label asp-for="CompanyName" class="form-label form-label-custom">Назва вашої компанії</label>
+                            <div class="input-group input-group-custom">
+                                <span class="input-group-text bg-white border-0"><i class="bi bi-briefcase"></i></span>
+                                <input asp-for="CompanyName" class="form-control border-0 ps-1" placeholder="Введіть назву..." />
+                            </div>
+                            <span asp-validation-for="CompanyName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-grid gap-2 pt-2">
+                            <button type="submit" class="btn btn-navy btn-lg fw-bold rounded-pill py-3">
+                                Створити профіль
+                            </button>
+                           
+                        </div>
+                    </form>
+
+                </div>
             </div>
-        </form>
+
+            <div class="text-center mt-4 text-muted small">
+                © 2026 Платформа LinkNode. Всі права захищені.
+            </div>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+<style>
+   
+    .text-navy, .btn-navy {
+        color: #003366;
+    }
+
+    .bg-navy, .btn-navy {
+        background-color: #003366;
+        color: white;
+    }
+
+        .btn-navy:hover {
+            background-color: #002244;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+    .card-registration {
+        border-radius: 15px;
+        border: none;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+
+    .form-label-custom {
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        color: #6c757d;
+    }
+
+    .input-group-custom {
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid #dee2e6;
+        transition: all 0.3s ease;
+    }
+
+        .input-group-custom:focus-within {
+            border-color: #003366;
+            box-shadow: 0 0 0 0.25rem rgba(0, 51, 102, 0.1);
+        }
+</style>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

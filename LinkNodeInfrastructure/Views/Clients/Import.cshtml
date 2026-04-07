@@ -1,0 +1,97 @@
+﻿<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-file-earmark-excel text-primary" style="font-size: 3rem;"></i>
+                        <h3 class="fw-bold mt-2">Імпорт вакансій</h3>
+                        <p class="text-muted">Оберіть Excel-файл (.xlsx) для автоматичного завантаження даних</p>
+                    </div>
+
+                    @using (Html.BeginForm("Import", "Clients", FormMethod.Post, new { enctype = "multipart/form-data", id = "frm-excel" }))
+                    {
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Файл для завантаження:</label>
+
+                            
+                            <div class="input-group">
+                                <label class="input-group-text rounded-start-pill px-3 bg-light text-primary fw-bold border-2"
+                                       for="fileExcel" style="cursor: pointer; border-right: none;">
+                                    <i class="bi bi-folder2-open me-2"></i>Оберіть файл
+                                </label>
+
+                                
+                                <input type="file" name="fileExcel" id="fileExcel"
+                                       class="d-none" accept=".xlsx, .xls" required
+                                       onchange="updateFileName(this)" />
+
+                               
+                                <div id="file-name-display"
+                                     class="form-control rounded-end-pill border-2 text-muted d-flex align-items-center"
+                                     style="background: #fff; cursor: default; min-height: 45px;">
+                                    Файл не обрано
+                                </div>
+                            </div>
+
+                            
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-bold shadow-sm transition-hover-blue py-3">
+                                <i class="bi bi-cloud-arrow-up me-2"></i>Завантажити дані
+                            </button>
+                            <a asp-action="Index" class="btn btn-link text-muted text-decoration-none small text-center">
+                                Скасувати та повернутися
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateFileName(input) {
+        const display = document.getElementById('file-name-display');
+        if (input.files && input.files.length > 0) {
+            display.innerText = input.files[0].name;
+            display.classList.remove('text-muted');
+            display.classList.add('text-dark');
+        } else {
+            display.innerText = 'Файл не обрано';
+            display.classList.add('text-muted');
+            display.classList.remove('text-dark');
+        }
+    }
+</script>
+
+<style>
+   
+    .input-group:hover .form-control,
+    .input-group:hover .input-group-text {
+        border-color: #0d6efd;
+    }
+
+    .transition-hover-blue {
+        transition: all 0.3s ease;
+    }
+
+        .transition-hover-blue:hover {
+            background-color: #0b5ed7;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3) !important;
+        }
+
+    .card {
+        background: #ffffff;
+    }
+
+    #file-name-display {
+        border-left: none;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>

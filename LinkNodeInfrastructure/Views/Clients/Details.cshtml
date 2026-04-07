@@ -1,42 +1,85 @@
 ﻿@model LinkNodeDomain.Model.Client
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Деталі клієнта";
 }
 
-<h1>Details</h1>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-5 fw-bold text-primary">@Html.DisplayFor(model => model.CompanyName)</h1>
+            <p class="text-muted"><i class="fas fa-info-circle me-1"></i> Детальна інформація про клієнта</p>
+        </div>
+        <div>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fas fa-chevron-left me-1"></i> Назад до списку
+            </a>
+        </div>
+    </div>
 
-<div>
-    <h4>Client</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CompanyName)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CompanyName)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.HireRate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.HireRate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.AvgHourlyRatePaid)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.AvgHourlyRatePaid)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ClientNavigation)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ClientNavigation.Country)
-        </dd>
-    </dl>
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-3">
+            <h5 class="card-title mb-0 text-secondary">Загальні дані</h5>
+        </div>
+        <div class="card-body p-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-4">
+                        <label class="text-uppercase text-muted small fw-bold d-block">@Html.DisplayNameFor(model => model.CompanyName)</label>
+                        <span class="fs-5">@Html.DisplayFor(model => model.CompanyName)</span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="text-uppercase text-muted small fw-bold d-block">@Html.DisplayNameFor(model => model.ClientNavigation)</label>
+                        <span class="badge bg-light text-dark border p-2">
+                            <i class="fas fa-globe-europe me-1 text-primary"></i>
+                            @Html.DisplayFor(model => model.ClientNavigation.Country)
+                        </span>
+                    </div>
+                </div>
+
+                <div class="col-md-6 border-start-md">
+                    <div class="mb-4">
+                        <label class="text-uppercase text-muted small fw-bold d-block">@Html.DisplayNameFor(model => model.HireRate)</label>
+                        <span class="fs-5 text-dark">
+                            @Html.DisplayFor(model => model.HireRate) %
+                        </span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="text-uppercase text-muted small fw-bold d-block">@Html.DisplayNameFor(model => model.AvgHourlyRatePaid)</label>
+                        <div class="d-flex align-items-center">
+                            <span class="fs-4 fw-bold text-success">$@Html.DisplayFor(model => model.AvgHourlyRatePaid)</span>
+                            <span class="text-muted ms-2">/ год</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-footer bg-light d-flex justify-content-end py-3">
+            <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-primary px-4 shadow-sm">
+                <i class="fas fa-edit me-1"></i> Редагувати
+            </a>
+        </div>
+    </div>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
-</div>
+
+<style>
+    @@media (min-width: 768px) {
+        .border-start-md {
+            border-left: 1px solid #dee2e6 !important;
+            padding-left: 3rem;
+        }
+    }
+
+    .card {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    label {
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+    }
+</style>

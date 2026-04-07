@@ -6,18 +6,20 @@ namespace LinkNodeDomain.Model;
 
 public partial class Freelancer : Entity
 {
-    [Required(ErrorMessage = "Поле не повинно бути порожнім.")]
+    [Required(ErrorMessage = "Будь ласка, оберіть напрямок діяльності.")]
     [Display(Name = "Категорія")]
     public int CategoryId { get; set; }
 
     [Required(ErrorMessage = "Поле не повинно бути порожнім.")]
     [Display(Name = "Погодинна ставка")]
+    [Range(0, 100000000, ErrorMessage = "Ставка повинна бути в межах від 0 до 100000000.")]
+    [DataType(DataType.Currency)]
     public decimal HourlyRate { get; set; }
 
     [Display(Name = "Опис")]
     public string? Description { get; set; }
 
-    [Required(ErrorMessage = "Поле не повинно бути порожнім.")]
+    [Required(ErrorMessage = "Будь ласка, оберіть тип зайнятості.")]
     [Display(Name = "Тип зайнятості")]
     public int EmpTypeId { get; set; }
 
