@@ -24,10 +24,38 @@ namespace LinkNodeInfrastructure.Controllers
         }
 
         // GET: Clients
-        public async Task<IActionResult> Index()
+        [HttpGet]
+        
+        public async Task<IActionResult> Index(int? searchId)
         {
-            var dbLinkNodeContext = _context.Clients.Include(c => c.ClientNavigation);
-            return View(await dbLinkNodeContext.ToListAsync());
+           
+            var query = _context.Clients
+                .Include(c => c.ClientNavigation)
+                .AsQueryable();
+
+           
+            bool isAdmin = User.IsInRole("admin");
+
+            if (isAdmin)
+            {
+               
+                if (searchId.HasValue)
+                {
+                    query = query.Where(c => c.Id == searchId.Value);
+                }
+               
+            }
+            else
+            {
+                var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (int.TryParse(userIdString, out int currentUserId))
+                {
+                    query = query.Where(c => c.Id == currentUserId);
+                }
+            }
+
+            var result = await query.ToListAsync();
+            return View(result);
         }
 
         // GET: Clients/Details/5
@@ -184,29 +212,48 @@ namespace LinkNodeInfrastructure.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Import(IFormFile fileExcel, CancellationToken cancellationToken = default)
         {
+            
             if (fileExcel == null || fileExcel.Length == 0)
             {
                 ModelState.AddModelError("", "Будь ласка, оберіть файл для завантаження.");
                 return View();
             }
 
+           
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int clientId))
             {
-                return Challenge(); 
+                return Challenge();
+            }
+
+            try
+            {
+                
+                var importService = _categoryDataPortServiceFactory.GetImportService(fileExcel.ContentType);
+
+               
+                using (var stream = fileExcel.OpenReadStream())
+                {
+                    await importService.ImportFromStreamAsync(stream, clientId, cancellationToken);
+                }
+
+                
+                TempData["SuccessMessage"] = "Дані успішно імпортовано!";
+                return RedirectToAction("Index", "Vacancies");
+            }
+            catch (ArgumentException ex)
+            {
+                
+                ModelState.AddModelError("", $"Помилка валідації даних: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                
+                ModelState.AddModelError("", "Сталася неочікувана помилка при обробці файлу. Перевірте формат Excel.");
             }
 
            
-            var importService = _categoryDataPortServiceFactory.GetImportService(fileExcel.ContentType);
-
-            
-            using (var stream = fileExcel.OpenReadStream())
-            {
-                
-                await importService.ImportFromStreamAsync(stream, clientId, cancellationToken);
-            }
-
-            return RedirectToAction("Index", "Vacancies");
+            return View();
         }
 
         [HttpGet]

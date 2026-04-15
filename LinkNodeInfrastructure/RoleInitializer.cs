@@ -9,7 +9,7 @@ namespace LinkNodeInfrastructure
     {
         public static async Task InitializeAsync(UserManager<User> userManager, RoleManager<IdentityRole<int>> roleManager)
         {
-            string adminEmail = "admin1@gmail.comadmin1@gmail.com";
+            string adminEmail = "ad@gmail.com";
             string password = "Qwerty_1";
 
             string[] roles = new string[] { "admin", "client", "freelancer" };

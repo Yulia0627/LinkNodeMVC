@@ -56,6 +56,14 @@ namespace LinkNodeInfrastructure.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Category1,Id")] Category category)
         {
+            bool exists = await _context.Categories
+                .AnyAsync(c => c.Category1.ToLower() == category.Category1.ToLower());
+
+            if (exists)
+            {
+                ModelState.AddModelError("Category1", "Категорія з такою назвою вже існує.");
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Add(category);
@@ -93,6 +101,15 @@ namespace LinkNodeInfrastructure.Controllers
                 return NotFound();
             }
 
+            
+            bool exists = await _context.Categories
+                .AnyAsync(c => c.Category1.ToLower() == category.Category1.ToLower() && c.Id != id);
+
+            if (exists)
+            {
+                ModelState.AddModelError("Category1", "Інша категорія вже має таку назву.");
+            }
+
             if (ModelState.IsValid)
             {
                 try
@@ -102,14 +119,8 @@ namespace LinkNodeInfrastructure.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!CategoryExists(category.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    if (!CategoryExists(category.Id)) { return NotFound(); }
+                    else { throw; }
                 }
                 return RedirectToAction(nameof(Index));
             }

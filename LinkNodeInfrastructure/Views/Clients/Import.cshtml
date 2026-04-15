@@ -9,39 +9,52 @@
                         <p class="text-muted">Оберіть Excel-файл (.xlsx) для автоматичного завантаження даних</p>
                     </div>
 
+                 
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger rounded-4 shadow-sm mb-4">
+                            <div asp-validation-summary="ModelOnly" class="small"></div>
+                        </div>
+                    }
+
+                   
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success rounded-4 shadow-sm mb-4">
+                            <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+                        </div>
+                    }
+
                     @using (Html.BeginForm("Import", "Clients", FormMethod.Post, new { enctype = "multipart/form-data", id = "frm-excel" }))
                     {
+                        @Html.AntiForgeryToken() 
+
                         <div class="mb-4">
                             <label class="form-label fw-semibold">Файл для завантаження:</label>
 
-                            
                             <div class="input-group">
                                 <label class="input-group-text rounded-start-pill px-3 bg-light text-primary fw-bold border-2"
                                        for="fileExcel" style="cursor: pointer; border-right: none;">
                                     <i class="bi bi-folder2-open me-2"></i>Оберіть файл
                                 </label>
 
-                                
                                 <input type="file" name="fileExcel" id="fileExcel"
                                        class="d-none" accept=".xlsx, .xls" required
                                        onchange="updateFileName(this)" />
 
-                               
                                 <div id="file-name-display"
                                      class="form-control rounded-end-pill border-2 text-muted d-flex align-items-center"
                                      style="background: #fff; cursor: default; min-height: 45px;">
                                     Файл не обрано
                                 </div>
                             </div>
-
-                            
                         </div>
 
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-bold shadow-sm transition-hover-blue py-3">
                                 <i class="bi bi-cloud-arrow-up me-2"></i>Завантажити дані
                             </button>
-                            <a asp-action="Index" class="btn btn-link text-muted text-decoration-none small text-center">
+                            <a asp-action="Index" asp-controller="Vacancies" class="btn btn-link text-muted text-decoration-none small text-center">
                                 Скасувати та повернутися
                             </a>
                         </div>
@@ -69,6 +82,12 @@
 
 <style>
    
+    .validation-summary-errors ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
     .input-group:hover .form-control,
     .input-group:hover .input-group-text {
         border-color: #0d6efd;

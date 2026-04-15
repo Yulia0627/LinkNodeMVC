@@ -26,8 +26,29 @@ namespace LinkNodeInfrastructure.Controllers
         // GET: Invites
         public async Task<IActionResult> Index()
         {
-            var dbLinkNodeContext = _context.Invites.Include(i => i.Freelancer).Include(i => i.Status).Include(i => i.Vacancy);
-            return View(await dbLinkNodeContext.ToListAsync());
+            var userIdString = _userManager.GetUserId(User);
+            if (string.IsNullOrEmpty(userIdString)) return Challenge();
+            int currentUserId = int.Parse(userIdString);
+
+            var query = _context.Invites
+                .Include(i => i.Freelancer)
+                    .ThenInclude(f => f.FreelancerNavigation) 
+                .Include(i => i.Status)
+                .Include(i => i.Vacancy)
+                .AsQueryable();
+
+            if (User.IsInRole("client"))
+            {
+               
+                query = query.Where(i => i.Vacancy.ClientId == currentUserId);
+            }
+            else if (User.IsInRole("freelancer"))
+            {
+                
+                query = query.Where(i => i.FreelancerId == currentUserId);
+            }
+
+            return View(await query.ToListAsync());
         }
 
         // GET: Invites/Details/5

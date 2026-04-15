@@ -1,29 +1,54 @@
-﻿using System;
+﻿using LinkNodeDomain.Model;
+using LinkNodeInfrastructure;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using LinkNodeDomain.Model;
-using LinkNodeInfrastructure;
 
 namespace LinkNodeInfrastructure.Controllers
 {
     public class InterviewsController : Controller
     {
         private readonly DbLinkNodeContext _context;
+        private readonly UserManager<User> _userManager;
 
-        public InterviewsController(DbLinkNodeContext context)
+        public InterviewsController(DbLinkNodeContext context, UserManager<User> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Interviews
         public async Task<IActionResult> Index()
         {
-            var dbLinkNodeContext = _context.Interviews.Include(i => i.IntroStatus).Include(i => i.Prop);
-            return View(await dbLinkNodeContext.ToListAsync());
+            var userIdString = _userManager.GetUserId(User);
+            if (string.IsNullOrEmpty(userIdString)) return Challenge();
+            int currentUserId = int.Parse(userIdString);
+
+            
+            var query = _context.Interviews
+                .Include(i => i.IntroStatus)
+                .Include(i => i.Prop)
+                    .ThenInclude(p => p.Vacancy) 
+                .Include(i => i.Prop)
+                    .ThenInclude(p => p.Freelancer) 
+                .AsQueryable();
+
+            if (User.IsInRole("client"))
+            {
+                query = query.Where(i => i.Prop.Vacancy.ClientId == currentUserId);
+            }
+            else if (User.IsInRole("freelancer"))
+            {
+                query = query.Where(i => i.Prop.FreelancerId == currentUserId);
+            }
+
+            return View(await query.ToListAsync());
         }
 
         // GET: Interviews/Details/5

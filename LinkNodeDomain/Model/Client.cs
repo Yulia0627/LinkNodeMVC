@@ -16,6 +16,7 @@ public partial class Client : Entity
     [Display(Name = "Середня оплата за годину")]
     public decimal? AvgHourlyRatePaid { get; set; }
 
+    [Display(Name = "Місце розташування")]
     public virtual User ClientNavigation { get; set; } = null!;
 
     public virtual ICollection<Vacancy> Vacancies { get; set; } = new List<Vacancy>();

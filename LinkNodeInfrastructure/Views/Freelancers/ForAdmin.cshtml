@@ -1,20 +1,23 @@
-﻿@model IEnumerable<LinkNodeDomain.Model.Client>
+﻿@model IEnumerable<LinkNodeDomain.Model.Freelancer>
 
 @{
-    ViewData["Title"] = "Керування клієнтами";
+    ViewData["Title"] = "Керування фрілансерами";
 }
-@await Html.PartialAsync("_NavigationTabs")
-<div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
-    <h1 class="h3">Керування клієнтами</h1>
 
-    <form asp-action="Index" method="get" class="d-flex gap-2">
+@await Html.PartialAsync("_NavigationTabs")
+
+<div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+    <h1 class="h3">Керування фрілансерами</h1>
+
+    <form asp-action="ForAdmin" method="get" class="d-flex gap-2">
         <div class="input-group input-group-sm">
-            <input type="number" name="searchId" min="0" class="form-control" placeholder="Пошук за ID..." value="@Context.Request.Query["searchId"]" />
+            <input type="number" name="searchId" min="0" class="form-control"
+                   placeholder="Пошук за ID..." value="@Context.Request.Query["searchId"]" />
             <button type="submit" class="btn btn-primary">
                 <i class="bi bi-search"></i> Знайти
             </button>
         </div>
-        <a asp-action="Index" class="btn btn-outline-secondary btn-sm d-flex align-items-center">Скинути</a>
+        <a asp-action="ForAdmin" class="btn btn-outline-secondary btn-sm d-flex align-items-center">Скинути</a>
     </form>
 </div>
 
@@ -22,9 +25,10 @@
     <thead class="table-light">
         <tr>
             <th style="width: 80px;">ID</th>
-            <th>@Html.DisplayNameFor(model => model.CompanyName)</th>
+            <th>Фрілансер</th>
+            <th>Категорія</th>
             <th style="width: 150px;">Статус</th>
-            <th style="width: 300px;">Дія</th>
+            <th style="width: 200px;">Дія</th>
         </tr>
     </thead>
     <tbody>
@@ -32,9 +36,20 @@
         {
             <tr>
                 <td class="fw-bold">@item.Id</td>
-                <td>@Html.DisplayFor(modelItem => item.CompanyName)</td>
                 <td>
-                    @if (item.ClientNavigation?.IsActive == true)
+                    <div>
+                        <span class="fw-bold">@item.FreelancerNavigation?.Name @item.FreelancerNavigation?.Surname</span>
+                        <br />
+                        <small class="text-muted">@item.FreelancerNavigation?.Email</small>
+                    </div>
+                </td>
+                <td>
+                    <span class="badge bg-info-subtle text-info border border-info-subtle">
+                        @item.Category?.Category1
+                    </span>
+                </td>
+                <td>
+                    @if (item.FreelancerNavigation?.IsActive == true)
                     {
                         <span class="badge bg-success-subtle text-success border border-success-subtle px-3">Активний</span>
                     }
@@ -45,12 +60,12 @@
                 </td>
                 <td>
                     <div class="d-flex gap-2">
-                       
+                        
                         <form asp-controller="Users" asp-action="ToggleBlock" asp-route-id="@item.Id"
                               asp-route-returnUrl="@Context.Request.Path@Context.Request.QueryString"
                               method="post" class="m-0">
 
-                            @if (item.ClientNavigation?.IsActive == true)
+                            @if (item.FreelancerNavigation?.IsActive == true)
                             {
                                 <button type="submit" class="btn btn-sm btn-warning d-flex align-items-center gap-1">
                                     <i class="bi bi-slash-circle"></i> Блокувати
@@ -64,6 +79,7 @@
                             }
                         </form>
 
+     
                     </div>
                 </td>
             </tr>
@@ -71,8 +87,8 @@
         @if (!Model.Any())
         {
             <tr>
-                <td colspan="4" class="text-center text-muted py-4">
-                    Клієнта з таким ідентифікатором не знайдено.
+                <td colspan="5" class="text-center text-muted py-4">
+                    Фрілансера з таким ідентифікатором не знайдено.
                 </td>
             </tr>
         }

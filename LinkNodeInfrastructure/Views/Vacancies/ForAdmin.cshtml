@@ -1,0 +1,90 @@
+﻿@model IEnumerable<LinkNodeDomain.Model.Vacancy>
+
+@{
+    ViewData["Title"] = "Керування вакансіями";
+}
+
+@await Html.PartialAsync("_NavigationTabs")
+
+<div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+    <h1 class="h3">Керування вакансіями</h1>
+
+    <form asp-action="Index" method="get" class="d-flex gap-2">
+        <div class="input-group input-group-sm">
+            <input type="number" name="searchId" min="0" class="form-control"
+                   placeholder="Пошук за ID..." value="@Context.Request.Query["searchId"]" />
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search"></i> Знайти
+            </button>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm d-flex align-items-center">Скинути</a>
+    </form>
+</div>
+
+<table class="table table-hover align-middle shadow-sm">
+    <thead class="table-light">
+        <tr>
+            <th style="width: 80px;">ID</th>
+            <th>Назва вакансії</th>
+            <th>Клієнт (Компанія)</th>
+            <th>Бюджет</th>
+            <th style="width: 150px;">Статус</th>
+            <th style="width: 150px;">Дія</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td class="fw-bold">@item.Id</td>
+                <td>
+                    <div class="fw-bold">@item.Title</div>
+                    <small class="text-muted">@item.Category?.Category1 | @item.EmpType?.EmpType</small>
+                </td>
+                <td>
+                    @if (item.Client != null)
+                    {
+                        <span>@item.Client.CompanyName</span>
+                        <br />
+                        <small class="text-muted">ID Клієнта: @item.ClientId</small>
+                    }
+                </td>
+                <td>
+                    <span class="text-success fw-bold">@item.Price $</span>
+                </td>
+                <td>
+                    @if (item.ClosedDate == null)
+                    {
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-3">Відкрита</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-3">Закрита</span>
+                        <br />
+                        <small class="text-muted" style="font-size: 0.7rem;">@item.ClosedDate?.ToString("dd.MM.yyyy")</small>
+                    }
+                </td>
+                <td>
+                    <div class="d-flex gap-2">
+                        <form asp-action="Delete" asp-route-id="@item.Id" method="post"
+                              onsubmit="return confirm('Ви впевнені, що хочете видалити вакансію №@item.Id?');"
+                              class="m-0">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-sm btn-danger d-flex align-items-center gap-1">
+                                <i class="bi bi-trash"></i> Видалити
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        }
+        @if (!Model.Any())
+        {
+            <tr>
+                <td colspan="6" class="text-center text-muted py-4">
+                    Вакансій не знайдено.
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

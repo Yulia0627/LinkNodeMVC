@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using LinkNodeDomain.Model;
+using LinkNodeInfrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using LinkNodeDomain.Model;
-using LinkNodeInfrastructure;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace LinkNodeInfrastructure.Controllers
 {
@@ -55,7 +56,7 @@ namespace LinkNodeInfrastructure.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Name,Surname,Country")] User user)
         {
-          
+
             ModelState.Remove("CreatedDate");
             ModelState.Remove("UpdatedDate");
             ModelState.Remove("IsActive");
@@ -66,7 +67,7 @@ namespace LinkNodeInfrastructure.Controllers
                 user.CreatedDate = DateTime.Now;
                 user.UpdatedDate = DateTime.Now;
 
-               
+
                 user.UserName = user.Name + user.Surname;
 
                 _context.Add(user);
@@ -107,11 +108,11 @@ namespace LinkNodeInfrastructure.Controllers
             {
                 try
                 {
-             
+
                     user.UpdatedDate = DateTime.Now;
 
                     _context.Update(user);
-            
+
                     _context.Entry(user).Property(x => x.CreatedDate).IsModified = false;
 
                     await _context.SaveChangesAsync();
@@ -168,6 +169,27 @@ namespace LinkNodeInfrastructure.Controllers
         private bool UserExists(int id)
         {
             return _context.Users.Any(e => e.Id == id);
+        }
+
+       
+        
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleBlock(int id, string returnUrl)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null) return NotFound();
+
+            user.IsActive = !user.IsActive;
+            user.UpdatedDate = DateTime.Now;
+
+            string actionName = user.IsActive ? "Розблокований користувач" : "Заблокований користувач";
+          
+            await _context.SaveChangesAsync();
+
+            if (!string.IsNullOrEmpty(returnUrl)) return LocalRedirect(returnUrl);
+            return RedirectToAction("Index", "Users");
         }
     }
 }

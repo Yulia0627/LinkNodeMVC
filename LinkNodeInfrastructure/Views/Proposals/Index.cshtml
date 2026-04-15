@@ -3,11 +3,9 @@
 @{
     ViewData["Title"] = "Пропозиції";
 }
-
+@await Html.PartialAsync("_NavigationTabs")
 <div class="container mt-5">
-    <div class="d-flex justify-content-center mb-4">
-        @await Html.PartialAsync("_NavigationTabs")
-    </div>
+    
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="fw-bold text-dark">@(User.IsInRole("Client") ? "Отримані пропозиції" : "Мої пропозиції")</h1>

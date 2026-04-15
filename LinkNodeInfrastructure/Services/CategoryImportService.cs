@@ -68,14 +68,14 @@ namespace LinkNodeInfrastructure.Services
 
             if (value.IsBlank)
             {
-                throw new ArgumentException($"Назва вакансії не може бути порожньою.");
+                throw new ArgumentException($"назва вакансії не може бути порожньою.");
             }
 
             string title = value.ToString().Trim();
 
             if (string.IsNullOrEmpty(title))
             {
-                throw new ArgumentException($"Назва містить лише пробіли.");
+                throw new ArgumentException($"назва містить лише пробіли.");
             }
 
             return title;
@@ -83,13 +83,13 @@ namespace LinkNodeInfrastructure.Services
 
         private static int GetEmpTypeId(IXLRow row)
         {
-            string type = row.Cell(2).Value.ToString();
+            string type = row.Cell(2).Value.ToString().ToLower();
             if (type == "full-time")
                 return 1;
             else if (type == "part-time")
                 return 2;
             else
-                throw new ArgumentException($"Невідомий тип зайнятості: {type}");
+                throw new ArgumentException($"невідомий тип зайнятості: {type}");
         }
 
         private static decimal GetVacancyPrice(IXLRow row)
@@ -100,19 +100,19 @@ namespace LinkNodeInfrastructure.Services
           
             if (value.Value.IsBlank)
             {
-                throw new ArgumentException("Ціна не може бути порожньою.");
+                throw new ArgumentException("ціна не може бути порожньою.");
             }
 
            
             if (!value.TryGetValue(out decimal price))
             {
-                throw new ArgumentException("Некоректний формат ціни. Очікується число.");
+                throw new ArgumentException("некоректний формат ціни. Очікується число.");
             }
 
             
             if (price < 0)
             {
-                throw new ArgumentException("Ціна не може бути меншою за 0.");
+                throw new ArgumentException("ціна не може бути меншою за 0.");
             }
 
             return price;
@@ -124,14 +124,14 @@ namespace LinkNodeInfrastructure.Services
 
             if (value.IsBlank)
             {
-                throw new ArgumentException($"Опис вакансії не можу бути порожнім.");
+                throw new ArgumentException($"опис вакансії не можу бути порожнім.");
             }
 
             string desc = value.ToString();
 
             if (string.IsNullOrEmpty(desc))
             {
-                throw new ArgumentException($"Опис вакансії містить лише пробіли.");
+                throw new ArgumentException($"опис вакансії містить лише пробіли.");
             }
 
             return desc;

@@ -1,6 +1,7 @@
 ﻿using LinkNodeDomain.Model;
 using LinkNodeInfrastructure;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -15,15 +16,26 @@ namespace LinkNodeInfrastructure.Controllers
     public class FreelancersController : Controller
     {
         private readonly DbLinkNodeContext _context;
+        private readonly UserManager<User> _userManager;
 
-        public FreelancersController(DbLinkNodeContext context)
+        public FreelancersController(DbLinkNodeContext context, UserManager<User> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Freelancers
         public async Task<IActionResult> Index(string searchName, int? categoryId, decimal? maxRate)
         {
+            var currentUser = await _userManager.GetUserAsync(User);
+
+            
+            if (currentUser != null && !currentUser.IsActive && !User.IsInRole("admin"))
+            {
+                
+                return View(new List<Freelancer>());
+            }
+
             ViewData["CurrentName"] = searchName;
             ViewData["CurrentMaxRate"] = maxRate;
             ViewBag.CategoryId = new SelectList(_context.Categories, "Id", "Category1", categoryId);
@@ -31,6 +43,7 @@ namespace LinkNodeInfrastructure.Controllers
                 .Include(f => f.Category)
                 .Include(f => f.EmpType)
                 .Include(f => f.FreelancerNavigation)
+                .Where(f => f.FreelancerNavigation.IsActive == true)
                 .AsQueryable();
             if(!string.IsNullOrEmpty(searchName))
             {
@@ -147,12 +160,16 @@ namespace LinkNodeInfrastructure.Controllers
         [Authorize]
         public async Task<IActionResult> Edit(int id, [Bind("CategoryId,HourlyRate,Description,EmpTypeId,Id")] Freelancer freelancer)
         {
-           
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (id != freelancer.Id || id.ToString() != currentUserId)
             {
                 return Forbid();
             }
+
+           
+            ModelState.Remove("Category");
+            ModelState.Remove("EmpType");
+            ModelState.Remove("FreelancerNavigation");
 
             if (ModelState.IsValid)
             {
@@ -160,7 +177,6 @@ namespace LinkNodeInfrastructure.Controllers
                 {
                     _context.Update(freelancer);
                     await _context.SaveChangesAsync();
-                   
                     return RedirectToAction(nameof(Details), new { id = freelancer.Id });
                 }
                 catch (DbUpdateConcurrencyException)
@@ -170,9 +186,11 @@ namespace LinkNodeInfrastructure.Controllers
                 }
             }
 
+            
             ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Category1", freelancer.CategoryId);
             ViewData["EmpTypeId"] = new SelectList(_context.EmploymentTypes, "Id", "EmpType", freelancer.EmpTypeId);
-            return RedirectToAction("Details", "Freelancers");
+
+            return View(freelancer);
         }
 
         // GET: Freelancers/Delete/5
@@ -214,6 +232,23 @@ namespace LinkNodeInfrastructure.Controllers
         private bool FreelancerExists(int id)
         {
             return _context.Freelancers.Any(e => e.Id == id);
+        }
+
+        
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> ForAdmin(int? searchId)
+        {
+            var query = _context.Freelancers
+                .Include(f => f.FreelancerNavigation)
+                .Include(f => f.Category)
+                .AsQueryable();
+
+            if (searchId.HasValue)
+            {
+                query = query.Where(f => f.Id == searchId.Value);
+            }
+
+            return View(await query.ToListAsync());
         }
     }
 }

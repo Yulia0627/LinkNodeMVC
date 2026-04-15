@@ -24,9 +24,20 @@ namespace LinkNodeInfrastructure.Controllers
         }
 
         // GET: Vacancies
-        public async Task<IActionResult> Index(int? categoryId, decimal? price, int? empTypeId)
+        public async Task<IActionResult> Index(int? categoryId, decimal? price, int? empTypeId, int? searchId)
         {
+            var user = await _userManager.GetUserAsync(User);
+
             
+            if (user != null && !user.IsActive && !User.IsInRole("admin"))
+            {
+                
+                var emptyList = new List<Vacancy>();
+ 
+
+                return View(emptyList);
+            }
+
             var userIdString = _userManager.GetUserId(User);
             int currentUserId = 0;
             if (!string.IsNullOrEmpty(userIdString))
@@ -39,32 +50,49 @@ namespace LinkNodeInfrastructure.Controllers
                 .Include(v => v.Client)
                 .Include(v => v.EmpType)
                 .AsQueryable();
+            if (User.IsInRole("admin"))
+            {
+               
 
-            query = query.Where(v => v.ClosedDate == null || v.ClientId == currentUserId);
+                
+                if (searchId.HasValue)
+                {
+                    query = query.Where(v => v.Id == searchId.Value);
+                }
+            }
+            else if (User.IsInRole("client"))
+            {
+                
+                query = query.Where(v => v.ClientId == currentUserId);
+            }
+            else
+            {
 
-          
-            if (categoryId.HasValue)
-            {
-                query = query.Where(v => v.CategoryId == categoryId.Value);
+                query = query.Where(v => v.ClosedDate == null);
             }
-            if (price.HasValue)
-            {
-                query = query.Where(v => v.Price >= price.Value);
-            }
-            if (empTypeId.HasValue)
-            {
-                query = query.Where(v => v.EmpTypeId == empTypeId.Value);
-            }
+
+           
+            if (categoryId.HasValue) query = query.Where(v => v.CategoryId == categoryId.Value);
+            if (price.HasValue) query = query.Where(v => v.Price >= price.Value);
+            if (empTypeId.HasValue) query = query.Where(v => v.EmpTypeId == empTypeId.Value);
 
             query = query.OrderByDescending(v => v.CreatedDate);
 
-            
+           
             ViewBag.CurrentClientId = currentUserId;
             ViewData["CurrentPrice"] = price;
             ViewBag.CategoryId = new SelectList(_context.Categories, "Id", "Category1", categoryId);
             ViewBag.EmpTypeId = new SelectList(_context.EmploymentTypes, "Id", "EmpType", empTypeId);
 
-            return View(await query.ToListAsync());
+            var vacancies = await query.ToListAsync();
+
+
+            if (User.IsInRole("admin"))
+            {
+                return View("ForAdmin", vacancies);
+            }
+
+            return View(vacancies);
         }
 
         // GET: Vacancies/Details/5
@@ -179,7 +207,7 @@ namespace LinkNodeInfrastructure.Controllers
         }
 
         // GET: Vacancies/Delete/5
-        [Authorize(Roles = "client")]
+        [Authorize(Roles = "client,admin")] 
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -192,9 +220,13 @@ namespace LinkNodeInfrastructure.Controllers
 
             if (vacancy == null) return NotFound();
 
-            
             var userIdString = _userManager.GetUserId(User);
-            if (vacancy.ClientId.ToString() != userIdString) return Forbid();
+
+      
+            if (!User.IsInRole("admin") && vacancy.ClientId.ToString() != userIdString)
+            {
+                return Forbid();
+            }
 
             return View(vacancy);
         }
@@ -202,14 +234,19 @@ namespace LinkNodeInfrastructure.Controllers
         // POST: Vacancies/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "client")]
+        [Authorize(Roles = "client,admin")] 
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var vacancy = await _context.Vacancies.FindAsync(id);
             if (vacancy == null) return NotFound();
 
             var userIdString = _userManager.GetUserId(User);
-            if (vacancy.ClientId.ToString() != userIdString) return Forbid();
+
+       
+            if (!User.IsInRole("admin") && vacancy.ClientId.ToString() != userIdString)
+            {
+                return Forbid();
+            }
 
             _context.Vacancies.Remove(vacancy);
             await _context.SaveChangesAsync();

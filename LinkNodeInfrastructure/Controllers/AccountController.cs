@@ -86,7 +86,7 @@ namespace LinkNodeInfrastructure.Controllers
                         return RedirectToAction("Index", "Freelancers");
 
                     if (upperRoles.Contains("ADMIN"))
-                        return RedirectToAction("Index", "Admin");
+                        return RedirectToAction("Index", "Clients");
 
                     return RedirectToAction("Index", "Home");
                 }
@@ -113,9 +113,8 @@ namespace LinkNodeInfrastructure.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SetRole(int userId, string roleName) 
+        public async Task<IActionResult> SetRole(int userId, string roleName)
         {
-            
             var user = await _userManager.FindByIdAsync(userId.ToString());
             if (user == null) return NotFound();
 
@@ -127,11 +126,22 @@ namespace LinkNodeInfrastructure.Controllers
                 if (!result.Succeeded) return BadRequest("Не вдалося додати роль.");
             }
 
+    
             await _signInManager.SignInAsync(user, isPersistent: false);
 
-            return roleName == "FREELANCER"
-                ? RedirectToAction("Create", "Freelancers", new { id = user.Id })
-                : RedirectToAction("Create", "Clients", new { id = user.Id });
+           
+            if (roleName == "FREELANCER")
+            {
+                return RedirectToAction("Create", "Freelancers", new { id = user.Id });
+            }
+
+            if (roleName == "CLIENT")
+            {
+                return RedirectToAction("Create", "Clients", new { id = user.Id });
+            }
+
+           
+            return RedirectToAction("Index", "Clients");
         }
 
     }
